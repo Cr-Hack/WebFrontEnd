@@ -4,7 +4,7 @@
             ceci est la page pour s'inscrire. 
         </h2>
         <div >
-            <form action="post" class="container">
+            <form action="post" class="container2">
 
                 <input class="field" type="text" placeholder="Prénom" required>
 
@@ -39,7 +39,7 @@ export default {
 
 <style>
 
-.container {
+.container2 {
     display:flex ; 
     flex-direction: column;
 }
