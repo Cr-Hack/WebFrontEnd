@@ -1,8 +1,10 @@
 <template>
     <h1>SendFile Page</h1>
     <div class="container">
-        <h2>Select a file</h2>
+        <h2>Choisissez un fichier</h2>
         <input type="file" name="secret file" id="file">
+        <button type="submit">Confirmer</button>
+        <button type="submit">Annuler</button>
     </div>
 </template>
 
