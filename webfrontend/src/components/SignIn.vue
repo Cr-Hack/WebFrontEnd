@@ -7,16 +7,19 @@
         <form action="" method="post">
 
             <div class="input-group">
-                <input type="email" name="email" id="" placeholder="Email" required>
+                <input v-model="email" type="email" name="email" id="" placeholder="Email" required>
             </div>
             <div class="input-group">
-                <input type="password" name="pwd" id="" placeholder="Mot de passe" required>
+                <input v-model="pwd" type="password" name="pwd" id="" placeholder="Mot de passe" required>
             </div>
             <div class="input-group-btn">
-                <button class="btn" type="submit">Se connecter</button>
+                <button v-on:click="say()" class="btn" type="submit">Se connecter</button>
             </div>
         </form>
     </div>
+
+    <h4>{{ email}}</h4>
+    <h4>{{pwd}}</h4>
 
 </template>
 
@@ -25,6 +28,15 @@ export default {
     name : "SignIn", 
     setup(){
 
+    }, 
+    /*data : {
+
+
+    },*/ 
+    methods :{
+        say : function (){
+            alert("Connexion réussie") 
+        }
     }
 
 }
