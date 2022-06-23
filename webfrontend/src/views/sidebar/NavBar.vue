@@ -7,8 +7,9 @@
         <router-link to="/">Guide</router-link>
         <router-link to="/seefile">Afficher</router-link>
         <router-link to="/sendfile">Envoyer un fichier</router-link>
+        <a href="https://www.google.com/" id="logout"><i class="fa-solid fa-arrow-right-from-bracket"></i></a>
     </div>
-    <a href="https://www.google.com/" id="logout">Se deconnecter</a>
+    
 </nav>
 <router-view/>
 
@@ -36,7 +37,7 @@ nav{
 .nav_link{
     width: 350px;
     display: flex;
-    flex-direction: row;
+    flex: wrap;
     justify-content: space-evenly;
     font-size: 1em;
     font-weight: 300;
@@ -65,4 +66,10 @@ nav{
     border-bottom: 1px solid var(--red);
 }
 
+@media (max-width: 400px){
+    .nav_link{
+        display:none;
+    }
+
+}
 </style>

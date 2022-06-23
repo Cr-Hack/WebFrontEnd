@@ -11,7 +11,7 @@
             </tr>
         </thead>
         <tbody>
-            <tr v-for="info of infos" :key="info.id">
+            <tr v-for="(info, index) of infos" :key="index">
                 <td>{{info.de}}</td>
                 <td>{{info.a}}</td>
                 <td>{{info.fichier}}</td>
@@ -55,6 +55,14 @@ export default {
   justify-content: center;
   margin: 10px 70px 70px;
   box-shadow: 0px 35px 50px rgba(0,0,0,0.2);
+  max-height: 800px;
+  overflow-y: scroll ;
+
+}
+
+th{
+  position: sticky;
+  top: 0px;
 }
 
 .style-table{
@@ -66,6 +74,7 @@ export default {
   max-width: 100%;
   white-space: nowrap;
   background-color: white;
+
 }
 
 .style-table td, .style-table th{
