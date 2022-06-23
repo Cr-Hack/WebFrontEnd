@@ -36,6 +36,7 @@ export default {
     methods :{
         say : function (){
             alert("Connexion réussie") 
+            this.$router.push({name : 'HelloWorld'})
         }
     }
 

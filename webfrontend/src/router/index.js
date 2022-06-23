@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomePage from "@/components/HomePage"
 import SignIn from "@/components/SignIn"
 import signUp from "@/components/SignUp"
+import HelloWorld from '@/components/HelloWorld'
 
 // les différents chemins 
 const routes = [
@@ -11,7 +12,7 @@ const routes = [
         // url de la page 
         path : '/', 
         component : HomePage, 
-        // nom de la page 
+        // nom de la page sur l'onglet
         meta :{
             title : "Page d'accueil"
         }
@@ -31,6 +32,14 @@ const routes = [
         component: signUp,
         meta :{
             title : "Page d'inscriptions"
+        } 
+    }, 
+    {
+        name : "HelloWorld", 
+        path: '/HelloWorld', 
+        component: HelloWorld,
+        meta :{
+            title : "Page de test"
         } 
     }
 
