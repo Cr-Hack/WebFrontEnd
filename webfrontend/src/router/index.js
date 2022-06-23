@@ -44,8 +44,7 @@ const router = createRouter({
     routes
 });
 
-router.afterEach((to, from) => {
-    console.log(from, to),
+router.afterEach((to) => {
     document.title = to.meta.title;
 }) /*Change le titre de l'onglet en fonction de la page cliqué
 l'affiche aussi sur la console. Meta sert ici à changer le titre de l'onglet*/

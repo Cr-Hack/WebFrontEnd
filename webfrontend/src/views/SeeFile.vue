@@ -1,12 +1,13 @@
 <template>
-  <div>
-    <table>
+  <div class="table-wrapper">
+    <table class="style-table">
         <thead>
             <tr>
-                <th>De___</th>
-                <th>A___</th>
-                <th>Fichier___</th>
-                <th>Date/heure___</th>
+                <th>De</th>
+                <th>A</th>
+                <th>Fichier</th>
+                <th>Date/heure</th>
+                <th>Télécharger</th>
             </tr>
         </thead>
         <tbody>
@@ -15,6 +16,7 @@
                 <td>{{info.a}}</td>
                 <td>{{info.fichier}}</td>
                 <td>{{info.dateheure}}</td>
+                <td>{{info.downloadable}}</td>
             </tr>
         </tbody>
     
@@ -47,5 +49,37 @@ export default {
 </script>
 
 <style>
+.table-wrapper{
+  display: flex;
+  flex: wrap;
+  justify-content: center;
+  margin: 10px 70px 70px;
+  box-shadow: 0px 35px 50px rgba(0,0,0,0.2);
+}
 
+.style-table{
+  font-size: 12px;
+  font-weight: normal;
+  border: none;
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 100%;
+  white-space: nowrap;
+  background-color: white;
+}
+
+.style-table td, .style-table th{
+  text-align: center;
+  padding: 8px;
+}
+
+.style-table td{
+  border-right: 1px solid #F8F8F8;
+  font-size: 12px;
+}
+
+.style-table th {
+  background-color: var(--blue);
+  color: white;
+}
 </style>

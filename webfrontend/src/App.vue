@@ -1,45 +1,45 @@
 <template>
 <div id="app">
-    <nav>
-        <router-link to="/">Accueil</router-link> |
-        <router-link to="/seefile">See the files</router-link> |
-        <router-link to="/sendfile">Send files</router-link>
-    </nav>
-    <router-view/>
+    <NavBar/>
 </div>
 
 </template>
 
 <script>
+import NavBar from './views/sidebar/NavBar.vue'
 
 export default {
+  components: { NavBar },
   name: 'App',
   data(){
     return {
       
     }
   },
-  
+
 }
 </script>
 
 <style>
+
+
+:root{
+  --yellow: #F7B32B;
+  --blue: #2E86AB;
+  --red: #922D50;
+  font-family: "Segoe UI", sans-serif;
+}
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
 }
 
 a {
   text-decoration: none;
-  color: #C1C1C1;
+  color:black;
 }
 
-.router-link-active{
-  font-weight: bold;
-  color: #922D50;
-}
 </style>
