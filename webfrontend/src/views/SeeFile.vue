@@ -1,4 +1,5 @@
 <template>
+  <nav-bar/>
   <div class="table-wrapper">
     <table class="style-table">
         <thead>
@@ -28,7 +29,10 @@
 
 <script>
 import axios from 'axios'
+import NavBar from './sidebar/NavBar.vue'
+
 export default {
+  components : {NavBar}, 
 
   data(){
     return{

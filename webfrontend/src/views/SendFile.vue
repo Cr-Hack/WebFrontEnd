@@ -1,4 +1,5 @@
 <template>
+    <nav-bar/>
     <div class="container">
         <div class="title">Formulaire d'envoi chiffré</div>
         <div id="form">
@@ -18,7 +19,10 @@
 </template>
 
 <script>
+import NavBar from './sidebar/NavBar.vue'
+
 export default {
+    components : {NavBar}, 
     setup() {
         
     },

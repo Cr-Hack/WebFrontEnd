@@ -23,7 +23,7 @@
                     <input class="field" type="password" name="" id="" placeholder="Confirmation du mot de passe" required>
                 </div>
                 <div class="input-group-btn">
-                    <button class="btn" type="submit">C'est parti ! </button>
+                    <button v-on:click="goToSignIn()" class="btn" type="submit">C'est parti ! </button>
                 </div>
                 <div class="input-group-btn">
                     <button class="btn" type="reset">Reset</button>
@@ -43,6 +43,14 @@ export default {
     }, 
     data(){
 
+    }, 
+    methods :{
+
+        // redirection to the signin page when sign up 
+        goToSignIn : function(){
+            alert("Inscription réussie") 
+            this.$router.push({name : 'SignIn'})
+        }
     }
 }
 </script>

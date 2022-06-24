@@ -1,14 +1,12 @@
 <template>
         <nav class="nav">
-
-            <router-link to="/"><img src="./assets/logo.png" alt="logo"></router-link>
+              <router-link to="/"><img src="./assets/logo.png" alt="logo"></router-link>
             <router-link to="/SignIn" class="txt">Connexion</router-link>
             <router-link to="/SignUp" class="txt">Inscription</router-link>
-
         </nav>
         <router-view></router-view>
 
-        <footer>
+         <footer>
             <h4 class="txt-footer">Copyrigth : Cr'Hack </h4>
         </footer>
 </template>
@@ -20,7 +18,7 @@
 export default {
   name: 'App',
   components: {
-   
+    //HomePage, 
   }
 }
 </script>
@@ -41,6 +39,8 @@ export default {
       font-family: "Segoe UI", sans-serif;
     }
 
+  
+    
     .nav {
 
         background-color: #f7b32b;
@@ -57,8 +57,7 @@ export default {
         width : 100px ; 
     }
 
-    
-    footer {
+         footer {
         background-color: #f7b32b ; 
     }
 
@@ -70,9 +69,8 @@ export default {
     }
 
     a {
-    text-decoration: none;
-    color:black;
-  }
-
+        text-decoration: none;
+        color:black;
+    }
 
 </style>

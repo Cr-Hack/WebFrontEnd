@@ -1,10 +1,13 @@
 <template>
+    <nav-bar/>
     <h2>Comment utiliser Cr'Hack Share</h2>
 </template>
 
 <script>
-export default {
+import NavBar from './sidebar/NavBar.vue'
 
+export default {
+    components : {NavBar}, 
 }
 </script>
 

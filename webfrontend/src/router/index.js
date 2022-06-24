@@ -2,7 +2,6 @@ import { createRouter, createWebHistory } from "vue-router";
 import HomePage from "@/components/HomePage"
 import SignIn from "@/components/SignIn"
 import signUp from "@/components/SignUp"
-import HelloWorld from '@/components/HelloWorld'
 import MainPage from '../views/MainPage.vue';
 import SeeFile from '../views/SeeFile.vue';
 import SendFile from '../views/SendFile.vue';
@@ -23,7 +22,7 @@ const routes = [
     }, 
     //pages filles, à partir de la page mère 
     {
-        name : 'Page de connexion', 
+        name : 'SignIn', 
         path: '/SignIn', 
         component: SignIn, 
         meta :{
@@ -31,7 +30,7 @@ const routes = [
         }
     }, 
     {
-        name : "Page d'inscription", 
+        name : "SignUp", 
         path: '/SignUp', 
         component: signUp,
         meta :{
@@ -39,20 +38,11 @@ const routes = [
         } 
     }, 
     {
-        name : "HelloWorld", 
-        path: '/HelloWorld', 
-        component: HelloWorld,
-        meta :{
-            title : "Page de test"
-        } 
-    },
-    {
         name : 'Main Page',
-        // a changer 
-        path : '/', 
+        path : '/MainPage', 
         component : MainPage,
         meta: {
-            title : "Page d'accueil"
+            title : "Page d'accès aux fichiers"
         }
     },
     {
@@ -79,7 +69,6 @@ const routes = [
             title : '404 Not Found'
         }
     }, 
-
 
 ] ; 
 

@@ -13,13 +13,11 @@
                 <input v-model="pwd" type="password" name="pwd" id="" placeholder="Mot de passe" required>
             </div>
             <div class="input-group-btn">
-                <button v-on:click="say()" class="btn" type="submit">Se connecter</button>
+                <button v-on:click="goToMainPage()" class="btn" type="submit">Se connecter</button>
             </div>
         </form>
     </div>
 
-    <h4>{{ email}}</h4>
-    <h4>{{pwd}}</h4>
 
 </template>
 
@@ -34,9 +32,9 @@ export default {
 
     },*/ 
     methods :{
-        say : function (){
+        goToMainPage : function (){
             alert("Connexion réussie") 
-            this.$router.push({name : 'HelloWorld'})
+            this.$router.push({name : 'Main Page'})
         }
     }
 

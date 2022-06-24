@@ -1,5 +1,12 @@
 <template>
 
+        <!-- <nav class="nav">
+            <img v-on:click="goToHome()" src="../assets/logo.png" alt="logo" >
+            <button v-on:click="goToSignIn()" class="txt">Connexion</button>
+            <button v-on:click="goToSignUp()" class="txt">Inscription</button>
+        </nav>
+        <router-view></router-view> -->
+        
         <div class="body-white">
 
             <div class="txt-descr">
@@ -52,6 +59,9 @@
             </div>
 
         </div>
+
+       
+
 </template>
 
 <script>
@@ -60,9 +70,6 @@
 
 export default {
     name : 'HomePage',
-    components : {
-        //SignInVue, SignUpVue, 
-    }, 
     setup(){
 
     }, 
@@ -73,6 +80,20 @@ export default {
     }, 
     methods : {
 
+        goToSignIn : function (){
+            alert("changement de page") 
+            this.$router.push({name : 'SignIn'})
+        }, 
+
+        goToSignUp : function (){
+            alert("changement de page") 
+            this.$router.push({name : 'SignUp'})
+        }, 
+
+        goToHome : function (){
+            alert("changement de page") 
+            this.$router.push({name : 'HomePage'})
+        }
     }
 
 }
@@ -93,10 +114,16 @@ export default {
     }
 
     .txt{
+        /* for the button of nav bar */
         height: auto;
-        color: #922d50;
+        background: #922d50;
         padding: 2%;
         margin : 2% ; 
+        outline: none;
+        border-radius: 30px;
+        color: #FFF;
+        cursor: pointer;
+        transition: .3s;
     }
 
 
@@ -112,6 +139,8 @@ export default {
         /* haut droite bas gauche */ 
         margin : 2% 7% 2% 7% ; 
     }
+
+  
 
 
 </style>
