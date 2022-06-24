@@ -27,12 +27,19 @@ export default {
 
 <style>
   #app {
-    font-family: Avenir, Helvetica, Arial, sans-serif;
+    font-family:  "Segoe UI", sans-serif;
     /*-webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale; */
     text-align: center;
     color: #2c3e50;
   }
+
+    :root{
+      --yellow: #F7B32B;
+      --blue: #2E86AB;
+      --red: #922D50;
+      font-family: "Segoe UI", sans-serif;
+    }
 
     .nav {
 
@@ -61,5 +68,11 @@ export default {
         padding: 2%;
         margin : 0% ; 
     }
+
+    a {
+    text-decoration: none;
+    color:black;
+  }
+
 
 </style>
