@@ -17,7 +17,7 @@
             <div class="txt-descr">
                 <div class="section">
                     <h2>Monde/Résumé de notre projet</h2>
-                    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis doloribus deleniti ut debitis dolor assumenda voluptatum tempora, minima accusamus quasi, illum dolores incidunt? Eius quisquam nihil ad voluptatum repellat ipsa.</p>
+                    <p>Salut. Lorem ipsum dolor sit amet consectetur adipisicing elit. Reiciendis doloribus deleniti ut debitis dolor assumenda voluptatum tempora, minima accusamus quasi, illum dolores incidunt? Eius quisquam nihil ad voluptatum repellat ipsa.</p>
                 </div>
                 <div class="section">
                     <h2>Pourquoi-nous ?/Contexte de notre projet</h2>
