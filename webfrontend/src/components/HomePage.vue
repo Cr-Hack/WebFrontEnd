@@ -6,7 +6,12 @@
             <button v-on:click="goToSignUp()" class="txt">Inscription</button>
         </nav>
         <router-view></router-view> -->
-        
+        <nav class="nav">
+            <router-link to="/"><img src="../assets/logo.png" alt="logo"></router-link>
+            <router-link to="/SignIn" class="txt">Connexion</router-link>
+            <router-link to="/SignUp" class="txt">Inscription</router-link>
+        </nav>
+
         <div class="body-white">
 
             <div class="txt-descr">

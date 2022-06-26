@@ -1,9 +1,5 @@
 <template>
-        <nav class="nav">
-              <router-link to="/"><img src="./assets/logo.png" alt="logo"></router-link>
-            <router-link to="/SignIn" class="txt">Connexion</router-link>
-            <router-link to="/SignUp" class="txt">Inscription</router-link>
-        </nav>
+        
         <router-view></router-view>
 
          <footer>
