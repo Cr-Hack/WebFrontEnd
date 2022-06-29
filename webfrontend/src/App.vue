@@ -1,10 +1,6 @@
 <template>
-        
-        <router-view></router-view>
+  <router-view/>
 
-         <footer>
-            <h4 class="txt-footer">Copyrigth : Cr'Hack </h4>
-        </footer>
 </template>
 
 <script>

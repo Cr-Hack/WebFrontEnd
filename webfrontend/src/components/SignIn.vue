@@ -5,7 +5,6 @@
 
     <div class="container3">
         <form action="" method="post">
-
             <div class="input-group">
                 <input v-model="email" type="email" name="email" id="" placeholder="Email" required>
             </div>
