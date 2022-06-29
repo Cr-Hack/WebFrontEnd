@@ -53,10 +53,9 @@ export default {
             email: '',
             pwd: '',
             pwd_verif: '',
-            // the salt (other half of the AES key that will be stored in the database) - to be sent to the server as well
-            user_salt: window.crypto.getRandomValues(new Uint8Array(16)),  // why Uint8Array(16) ??? TBD 
+ 
             // the initialisation vector
-            init_vector: window.crypto.getRandomValues(new Uint8Array(12))
+            
         }
     }, 
     methods :{
@@ -64,46 +63,56 @@ export default {
 
 
         goToSignIn: async function () {
-            /* RSA key generation */
+            /***** RSA key generation *****/
             var keyPair = await this.rsaKeyPair();
             console.log(keyPair)
 
-            var rsaPrivate = keyPair[0];
-            var rsaPublic = keyPair[1];
+            console.log(keyPair.privateKey)
+            console.log(keyPair.publicKey)
+
+            console.log("avant exportation");
+            // export the CryptoKeys above into ArrayBuffers
+            let rsaPrivate = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey); // object of type ArrayBuffer
+            let rsaPublic = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+
+            console.log("ici");
+            console.log(rsaPrivate);
+            console.log(rsaPublic);
+
+            /***** RSA private key encryption *****/
+            const user_salt = window.crypto.getRandomValues(new Uint8Array(16));  // salt generation - why Uint8Array(16) ??? TBD 
+            const init_vector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
+            const rsaEncryptedPrivateKey = await this.encryptRsaKey(this.pwdVerif, rsaPrivate, init_vector, user_salt);  // encryption
+            console.log("this is the encrypted private rsa key: ")
+            console.log(rsaEncryptedPrivateKey)
 
 
-            console.log("this is the rsa private key: " + rsaPrivate)
-            console.log("this is the rsa public key: " + rsaPublic)
+            /***** elements to send the server *****/
+            var toServer = {
+                first_name: this.fname,
+                last_name: this.lname,
+                email: this.email,
+                hashpassword: "mdp à hasher",
+                publickey: rsaPublic,
+                privatekey: rsaEncryptedPrivateKey,
+                iv: init_vector, 
+                salt: user_salt,
+                
+            }
 
-            /* RSA private key encryption */
-            this.encryptRsaKey(this.pwdVerif, rsaPrivate, this.init_vector, this.user_salt, (rsaEncryptedPrivateKey) => {
-                console.log("this is the encrypted private rsa key: " + rsaEncryptedPrivateKey)
+            axios.post('http://localhost:5000/auth/register', toServer)
+                .then(function (response) {
+                    console.log(response);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
 
-                /* elements to send the server */
-                var toServer = {
-                    first_name: this.fname,
-                    last_name: this.lname,
-                    hashpassword: "mdp à hasher",
-                    publickey: rsaPublic,
-                    privatekey: rsaEncryptedPrivateKey,
-                    iv: this.init_vector, 
-                    salt: this.user_salt,
-                    email: this.email
-                }
+            // jsp comment on fait pour envoyer ça au serveur ?
 
-                axios.post('http://localhost:5000/auth/register', toServer)
-                    .then(function (response) {
-                        console.log(response);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
-
-                // jsp comment on fait pour envoyer ça au serveur ?
-
-                alert("Inscription réussie")
-                this.$router.push({ name: 'SignIn' })
-            })
+            alert("Inscription réussie")
+            this.$router.push({ name: 'SignIn' })
+            
         },
 
         // version 2
@@ -148,21 +157,11 @@ export default {
                     publicExponent: new Uint8Array([1, 0, 1]),  // WHY those arguments?? to be determined 
                     hash: "SHA-256",
                 },
-                true,
-                ["encrypt", "decrypt"]
-            )  // the return type is a promise that is an CryptoKeyPair
-
-            let privateCryptoKey = keyPair.privateKey;  // object of type CryptoKey
-            let publicCryptoKey = keyPair.publicKey;  // object of type CryptoKey
+                true,  // meaning that the key is extractable (it can be exported)
+                ["encrypt", "decrypt"] // key usages
+            )  // the return type is a promise that is a CryptoKeyPair
             
-            console.log(typeof(keyPair))
-
-            // export the CryptoKeys above into ArrayBuffers
-            let privateKey = await window.crypto.subtle.exportKey("spki", privateCryptoKey); // object of type ArrayBuffer
-            let publicKey = await window.crypto.subtle.exportKey("spki", publicCryptoKey);
-
-
-            return [privateKey, publicKey]
+            return keyPair
 
         },
 
@@ -172,10 +171,10 @@ export default {
         /***** AES-GCM-256 KEY GENERATION *****/
 
         // the AES "key material"
-        aesKeyMaterial: function (userPassword) {
+        aesKeyMaterial: async function (userPassword) {
             let pwdVerif = userPassword;
             let enc = new TextEncoder();
-            return window.crypto.subtle.importKey(  // WTF is that ???
+            return await window.crypto.subtle.importKey(  // WTF is that ???
                 "raw",
                 enc.encode(pwdVerif),
                 "PBKDF2",
@@ -185,11 +184,11 @@ export default {
         },
 
         // the actuall AES key
-        aesKey: function (keyMaterial) {
-            return window.crypto.subtle.deriveKey(
+        aesKey: async function (keyMaterial, user_salt) {
+            let symKey = await window.crypto.subtle.deriveKey( // a promise then an ArrayBuffer when it is fulfiled
                 {
                     "name": "PBKDF2",
-                    salt: this.user_salt,
+                    salt: user_salt,
                     "iterations": 100000,
                     "hash": "SHA-256"
                 },
@@ -198,6 +197,7 @@ export default {
                 true,
                 ["encrypt", "decrypt"]
             );
+            return symKey;
         },
 
 
@@ -229,7 +229,6 @@ export default {
             ); // return an ArrayBuffer
             
             return ciphertext;
-
 
         }
     }
