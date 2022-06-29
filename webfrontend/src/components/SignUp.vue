@@ -68,8 +68,9 @@ export default {
             var keyPair = await this.rsaKeyPair();
             console.log(keyPair)
 
-            var rsaPrivate = keyPair.privateKey;
-            var rsaPublic = keyPair.publicKey;
+            var rsaPrivate = keyPair[0];
+            var rsaPublic = keyPair[1];
+
 
             console.log("this is the rsa private key: " + rsaPrivate)
             console.log("this is the rsa public key: " + rsaPublic)
@@ -80,16 +81,17 @@ export default {
 
                 /* elements to send the server */
                 var toServer = {
-                    first_name: this.lname,
+                    first_name: this.fname,
                     last_name: this.lname,
                     hashpassword: "mdp à hasher",
                     publickey: rsaPublic,
                     privatekey: rsaEncryptedPrivateKey,
                     iv: this.init_vector, 
-                    salt: this.user_salt
+                    salt: this.user_salt,
+                    email: this.email
                 }
 
-                axios.post('localhost:5050/auth/register', toServer)
+                axios.post('http://localhost:5000/auth/register', toServer)
                     .then(function (response) {
                         console.log(response);
                     })
@@ -137,8 +139,8 @@ export default {
 
 
         // RSA key generation
-        rsaKeyPair: function () {
-            return window.crypto.subtle.generateKey(
+        rsaKeyPair: async function () {
+            var keyPair = await window.crypto.subtle.generateKey(
                 {
                     name: "RSA-OAEP",
                     // Consider using a 4096-bit key for systems that require long-term security
@@ -148,7 +150,20 @@ export default {
                 },
                 true,
                 ["encrypt", "decrypt"]
-            )  // the return type is a promise that is an ArrayBuffer
+            )  // the return type is a promise that is an CryptoKeyPair
+
+            let privateCryptoKey = keyPair.privateKey;  // object of type CryptoKey
+            let publicCryptoKey = keyPair.publicKey;  // object of type CryptoKey
+            
+            console.log(typeof(keyPair))
+
+            // export the CryptoKeys above into ArrayBuffers
+            let privateKey = await window.crypto.subtle.exportKey("spki", privateCryptoKey); // object of type ArrayBuffer
+            let publicKey = await window.crypto.subtle.exportKey("spki", publicCryptoKey);
+
+
+            return [privateKey, publicKey]
+
         },
 
 
@@ -192,7 +207,7 @@ export default {
 
         // encryption function 
         // encryption function 
-        encryptRsaKey: async function(userPassword, rsaPrivateKeyPlain, initVector, userSalt, callBack) {
+        encryptRsaKey: async function(userPassword, rsaPrivateKeyPlain, initVector, userSalt) {
             // encoding of the plaintext so that the format is correct
             let enc = new TextEncoder();
             var plaintext = enc.encode(rsaPrivateKeyPlain);
@@ -203,7 +218,7 @@ export default {
             var key = await this.aesKey(keyMaterial, userSalt);  // var or let ? not sure...
 
             // encryption of the plaintext here
-            window.crypto.subtle.encrypt(
+            let ciphertext = await window.crypto.subtle.encrypt(
                 {
                     name: "AES-GCM",
                     iv: initVector,
@@ -211,17 +226,11 @@ export default {
                 },
                 key,
                 plaintext // data to cipher
-            ).then((ciphertext) => {
-                    // // let's display the ciphertext in a "readable" way
-                    // let ciphertextUnit = new Uint8Array(ciphertext, 0, 5);  // why 5??
-                    // let dec = new TextDecoder();
-                    // let ciphertextString = dec.decode(ciphertextUnit);
-                    // console.log(ciphertextString);
-                    // // CA MARCHE PAS ENCORE, IL VA FALLOIR TROUVER UNE FACON DE DISPLAY CE TRUC
-                    // console.log(typeof (ciphertext));
-                    callBack(ciphertext);  // return ciphertext (the encrypted RSA key which is a Promise that fulfills with an [ArrayBuffer] containing the ciphertext)
-                }
-            )
+            ); // return an ArrayBuffer
+            
+            return ciphertext;
+
+
         }
     }
 }
