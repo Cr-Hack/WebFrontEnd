@@ -53,27 +53,20 @@ export default {
             email: '',
             pwd: '',
             pwd_verif: '',
- 
-            // the initialisation vector
-            
         }
     }, 
     methods :{
         // redirection to the signin page when sign up 
-
-
         goToSignIn: async function () {
             /***** RSA key generation *****/
             var keyPair = await this.rsaKeyPair();
             console.log(keyPair)
-
             console.log(keyPair.privateKey)
             console.log(keyPair.publicKey)
-
             console.log("avant exportation");
             // export the CryptoKeys above into ArrayBuffers
-            let rsaPrivate = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey); // object of type ArrayBuffer
-            let rsaPublic = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);
+            let rsaPrivate = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);  // object of type ArrayBuffer
+            let rsaPublic = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);  // object of type ArrayBuffer
 
             console.log("ici");
             console.log(rsaPrivate);
@@ -86,6 +79,9 @@ export default {
             console.log("this is the encrypted private rsa key: ")
             console.log(rsaEncryptedPrivateKey)
 
+            /***** RSA private and public keys from type ArrayBuffer to String *****/
+            const rsaEncPrivKeyStr = this.arrayBufferToStr(rsaEncryptedPrivateKey);
+            const rsaPublicStr = this.arrayBufferToStr(rsaPublic)
 
             /***** elements to send the server *****/
             var toServer = {
@@ -93,11 +89,10 @@ export default {
                 last_name: this.lname,
                 email: this.email,
                 hashpassword: "mdp à hasher",
-                publickey: rsaPublic,
-                privatekey: rsaEncryptedPrivateKey,
+                privatekey: rsaEncPrivKeyStr,
+                publickey: rsaPublicStr,
                 iv: init_vector, 
                 salt: user_salt,
-                
             }
 
             axios.post('http://localhost:5000/auth/register', toServer)
@@ -108,44 +103,9 @@ export default {
                     console.log(error);
                 });
 
-            // jsp comment on fait pour envoyer ça au serveur ?
-
             alert("Inscription réussie")
             this.$router.push({ name: 'SignIn' })
-            
         },
-
-        // version 2
-                // goToSignIn: function(){
-        //     /* RSA key generation */
-        //     this.rsaKeyPair().then((keyPair) => {
-        //         var rsaPrivate = this.rsaPrivateKey(keyPair);
-        //         var rsaPublic = this.rsaPublicKey(keyPair);
-        //         console.log("this is the rsa private key: " + rsaPrivate)
-        //         console.log("this is the rsa public key: " + rsaPublic)
-
-        //         /* RSA private key encryption */
-        //         this.encryptRsaKey(this.pwdVerif, rsaPrivate, this.init_vector, this.user_salt, (rsaEncryptedPrivateKey) => {
-        //             console.log("this is the encrypted private rsa key: " + rsaEncryptedPrivateKey)
-
-        //             /* elements to send the server */
-        //             // var toServer = {
-        //             //     first_name: this.lname,
-        //             //     last_name: this.lname,
-        //             //     hashpassword: "mdp à hasher",
-        //             //     publickey: rsaPublic,
-        //             //     privatekey: rsaEncryptedPrivateKey,
-        //             //     iv: this.init_vector, 
-        //             //     salt: this.user_salt
-        //             // }
-        //             // jsp comment on fait pour envoyer ça au serveur ?
-
-        //             alert("Inscription réussie")
-        //             this.$router.push({ name: 'SignIn' })
-        //         })
-        //     });
-        // },
-
 
         // RSA key generation
         rsaKeyPair: async function () {
@@ -165,6 +125,10 @@ export default {
 
         },
 
+        arrayBufferToStr: function (arrayBuf) {
+            return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
+        },
+        
 
         // AES-GCM-256 encryption algorithm (to encrypt the RSA private key)
 
@@ -235,7 +199,7 @@ export default {
 }
 </script>
 
-<style>
 
+<style scoped>
 
 </style>
