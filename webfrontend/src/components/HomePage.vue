@@ -37,12 +37,12 @@
                 </div>
 
                 <div class="student Josephine">
-                    <img src="../assets/josephine1.jpg" alt="photo de josephine"/>
+                    <img src="../assets/josephine2.png" alt="photo de josephine"/>
                     <h4>Joséphine de Lestrange</h4>
                 </div>
 
                 <div class="student Antoine">
-                    <img src="../assets/antoine1.jpg" alt="photo d antoine"/>
+                    <img src="../assets/antoine.png" alt="photo d antoine"/>
                     <h4>Antoine Gay</h4>
                 </div>
                 
