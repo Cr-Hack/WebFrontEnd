@@ -5,7 +5,7 @@ import router from './router/index.js'
 //import Vuex from 'vuex';
 
 import '@fortawesome/fontawesome-free/js/all'
-import store from './store'
+//import store from './store'
 
 
 //Vue.use(Vuex)

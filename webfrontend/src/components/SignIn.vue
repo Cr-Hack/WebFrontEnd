@@ -73,7 +73,7 @@ export default {
 
     .container3 .input-group {
         width: 75%;
-        height: 50px;
+        height: 50px; 
         margin-bottom: 5%;
     }
 
@@ -119,7 +119,7 @@ export default {
     }
 
     .img2{
-        margin: 20%;
+        margin: 2%;
     }
 
 
