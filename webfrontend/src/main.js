@@ -1,9 +1,12 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router/index.js'
+//import Vue from 'vue';
+//import Vuex from 'vuex';
 
 import '@fortawesome/fontawesome-free/js/all'
 
+//Vue.use(Vuex)
 /*
 const jwt = require("jsonwebtoken")
 const express = require("express")
@@ -29,5 +32,17 @@ function generateAccessToken(user){
 }
 
 const accessToken = generateAccessToken(user)*/
+/*const store = new Vuex.store(
+    {
+        state : {
+            count : 0
+        }, 
+        mutations : {
+            increment (state){
+                state.count ++ 
+            }
+        }
+    }
+)*/
 
 createApp(App).use(router).mount('#app')

@@ -1,11 +1,5 @@
 <template>
-
-        <!-- <nav class="nav">
-            <img v-on:click="goToHome()" src="../assets/logo.png" alt="logo" >
-            <button v-on:click="goToSignIn()" class="txt">Connexion</button>
-            <button v-on:click="goToSignUp()" class="txt">Inscription</button>
-        </nav>
-        <router-view></router-view> -->
+    <div>
         <nav class="nav">
             <router-link to="/"><img src="../assets/logo.png" alt="logo"></router-link>
             <router-link to="/SignIn" class="txt">Connexion</router-link>
@@ -65,7 +59,7 @@
 
         </div>
 
-       
+    </div>
 
 </template>
 
