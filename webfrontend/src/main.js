@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router/index.js'
+import store from '@/store' // short for @/store/index
 //import Vue from 'vue';
 //import Vuex from 'vuex';
 
@@ -47,4 +48,4 @@ const accessToken = generateAccessToken(user)*/
     }
 )*/
 
-createApp(App).use(router).mount('#app')
+createApp(App).use(store).use(router).mount('#app')

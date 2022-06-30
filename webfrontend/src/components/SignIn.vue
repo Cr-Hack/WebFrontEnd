@@ -26,6 +26,7 @@
 </template>
 
 <script>
+import axios from 'axios'
 
 // :class="{'button--disabled': InvalidFields()}"
 export default {
@@ -43,11 +44,29 @@ export default {
 
     }, 
     methods :{
-        goToMainPage : function (){
+        goToMainPage : async function (){
             // check if the email and password are in the database 
             if (this.email != "" && this.pwd != ""){
-                alert ("Connexion réussie !")
-                this.$router.push({name : 'Main Page'})
+                let data = {
+                    email: this.email,
+                    hashpassword: this.pwd
+                }
+                try{
+                    let result = await axios.post("http://localhost:5000/auth/login", data)
+                    alert ("Connexion réussie !")
+                    this.$store.dispatch("setToken", result.token);
+                    this.$store.dispatch("addUser", {
+                        email: this.email,
+                        publicKey: result.publicKey,
+                        privateKey: result.privateKey,
+                        iv: result.iv,
+                        salt: result.salt
+                    });
+                    this.$router.push({ name: 'Main Page' })
+                }catch(error){
+                    console.log(error)
+                    if(error.response.data.error) alert(error.response.data.error)
+                }
             }
             else {
                 // 

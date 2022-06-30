@@ -99,23 +99,23 @@ export default {
                 first_name: this.fname,
                 last_name: this.lname,
                 email: this.email,
-                hashpassword: "mdp à hasher",
+                hashpassword: this.pwd,//    mdp à hasher
                 privatekey: rsaEncPrivKeyStr,
                 publickey: rsaPublicStr,
-                iv: init_vector, 
-                salt: user_salt,
+                iv: this.arrayBufferToStr(init_vector), 
+                salt: this.arrayBufferToStr(user_salt),
             }
 
-            axios.post('http://localhost:5000/auth/register', toServer)
-                .then(function (response) {
-                    console.log(response);
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
+            try {
+                let response = await axios.post('http://localhost:5000/auth/register', toServer)
+                console.log(response);
+                //alert("Inscription réussie")
+                this.$router.push({ name: 'SignIn' })
+            } catch (error) {
+                console.log(error);
+                if(error.response.data.error) alert(error.response.data.error)
+            }
 
-            alert("Inscription réussie")
-            this.$router.push({ name: 'SignIn' })
             
             /*if (this.pwd != this.pwd_verif){
                     alert ("Les champs de mot de passe sont différents ")
