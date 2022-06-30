@@ -6,83 +6,101 @@ import MainPage from '../views/MainPage.vue';
 import SeeFile from '../views/SeeFile.vue';
 import SendFile from '../views/SendFile.vue';
 import NotFound from '../views/NotFound.vue';
+import store from '@/store' // short for @/store/index
 
 // les différents chemins 
-const routes = [
-    {
+const routes = [{
         // page mère 
-        name : "HomePage", 
+        name: "HomePage",
         // url de la page 
-        path : '/', 
-        component : HomePage, 
+        path: '/',
+        component: HomePage,
         // nom de la page sur l'onglet
-        meta :{
-            title : "Page d'accueil"
+        meta: {
+            title: "Page d'accueil",
+            requiresAuth: false
         }
-    }, 
+    },
     //pages filles, à partir de la page mère 
     {
-        name : 'SignIn', 
-        path: '/SignIn', 
-        component: SignIn, 
-        meta :{
-            title : "Page de connexion"
-        }
-    }, 
-    {
-        name : "SignUp", 
-        path: '/SignUp', 
-        component: signUp,
-        meta :{
-            title : "Page d'inscriptions"
-        } 
-    }, 
-    {
-        name : 'Main Page',
-        path : '/MainPage', 
-        component : MainPage,
+        name: 'SignIn',
+        path: '/SignIn',
+        component: SignIn,
         meta: {
-            title : "Page d'accès aux fichiers"
+            title: "Page de connexion",
+            requiresAuth: false
         }
     },
     {
-        name : 'See File',
-        path : '/seefile',
-        component : SeeFile,
+        name: "SignUp",
+        path: '/SignUp',
+        component: signUp,
         meta: {
-            title : 'Voir les fichiers'
+            title: "Page d'inscriptions",
+            requiresAuth: false
+        }
+    },
+    {
+        name: 'Main Page',
+        path: '/MainPage',
+        component: MainPage,
+        meta: {
+            title: "Page d'accès aux fichiers",
+            requiresAuth: true
+        }
+    },
+    {
+        name: 'See File',
+        path: '/seefile',
+        component: SeeFile,
+        meta: {
+            title: 'Voir les fichiers',
+            requiresAuth: true
         }
     },
     {
         name: 'Send file',
-        path : '/sendfile',
-        component : SendFile,
+        path: '/sendfile',
+        component: SendFile,
         meta: {
-            title : 'Envoyer des fichiers'
+            title: 'Envoyer des fichiers',
+            requiresAuth: true
         }
     },
     {
-        name : 'notFound',
-        path : '/:pathMatch(.*)',
+        name: 'notFound',
+        path: '/:pathMatch(.*)',
         component: NotFound,
-        meta : {
-            title : '404 Not Found'
+        meta: {
+            title: '404 Not Found',
+            requiresAuth: false
         }
-    }, 
+    },
 
-] ; 
+];
 
 
 const router = createRouter({
-    history: createWebHistory(), 
-    routes, 
-}); 
+    history: createWebHistory(),
+    routes,
+});
 
- /*Change le titre de l'onglet en fonction de la page cliqué
+/*Change le titre de l'onglet en fonction de la page cliqué
 l'affiche aussi sur la console. Meta sert ici à changer le titre de l'onglet*/
 router.afterEach((to) => {
-    document.title=to.meta.title ; 
-}); 
+    document.title = to.meta.title;
+});
 
+router.beforeEach((to, from, next) => {
+    if (to.matched.some((record) => record.meta.requiresAuth)) {
+        if (store.getters.authentificated) {
+            next()
+        } else {
+            next('/SignIn')
+        }
+    } else {
+        next()
+    }
+})
 
-export default router ; 
+export default router;
