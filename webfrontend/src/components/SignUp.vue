@@ -1,5 +1,10 @@
 <template>
     <div>
+        <nav class="nav">
+            <router-link to="/"><img class="img2" src="../assets/logo.png" alt="logo"></router-link>
+        </nav>
+
+
         <h2>
             ceci est la page pour s'inscrire.
         </h2>
@@ -34,7 +39,6 @@
             </form>
         </div>
     </div>
-
 </template>
 
 <script>
@@ -57,6 +61,12 @@ export default {
     }, 
     methods :{
         // redirection to the signin page when sign up 
+
+        goToHome : function (){
+            alert("changement de page") 
+            this.$router.push({name : 'HomePage'})
+        }, 
+        
         goToSignIn: async function () {
             /***** RSA key generation *****/
             var keyPair = await this.rsaKeyPair();
@@ -105,6 +115,14 @@ export default {
 
             alert("Inscription réussie")
             this.$router.push({ name: 'SignIn' })
+            
+            /*if (this.pwd != this.pwd_verif){
+                    alert ("Les champs de mot de passe sont différents ")
+                }
+                else {
+                    alert("Inscription réussie") 
+                    this.$router.push({name : 'SignIn'})  
+                }*/
         },
 
         // RSA key generation
