@@ -6,7 +6,7 @@
 
 
         <h2>
-            ceci est la page pour s'inscrire.
+            Inscription
         </h2>
 
 
@@ -42,6 +42,7 @@
 </template>
 
 <script>
+
 
 const axios = require('axios')
 
@@ -216,7 +217,6 @@ export default {
     }
 }
 </script>
-
 
 <style scoped>
 

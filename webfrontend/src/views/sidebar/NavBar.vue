@@ -1,14 +1,13 @@
 <template>
 <nav>
     <div>
-        <a href="https://8.8.8.8/" id="title">Cr'Hack Share</a>
+        <router-link to="/" id="title">Cr'Hack Share</router-link>
     </div>
     <div class="nav_link">
         <router-link to="/MainPage">Guide</router-link>
         <router-link to="/seefile">Afficher</router-link>
         <router-link to="/sendfile">Envoyer un fichier</router-link>
         <router-link to="/"><i class="fa-solid fa-arrow-right-from-bracket"></i></router-link>
-        <!-- <a href="https://www.google.com/" id="logout"></a> -->
     </div>
     
 </nav>
@@ -18,6 +17,8 @@
 
 <script>
 export default {
+    methods:{
+    }
 
 }
 </script>
@@ -31,6 +32,7 @@ nav{
     align-items: center;
     padding: 0px 10px;
     background-color: var(--yellow);
+    height: auto;
 }
 
 
