@@ -79,9 +79,11 @@ export default {
             let rsaPrivate = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);  // object of type ArrayBuffer
             let rsaPublic = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);  // object of type ArrayBuffer
 
-            console.log("ici");
+            console.log("ici before encryption (en arraybuffer)");
             console.log(rsaPrivate);
+            console.log("longeur private key " + rsaPrivate.byteLength)
             console.log(rsaPublic);
+            console.log("longeur public key " + rsaPublic.byteLength)
 
             /***** RSA private key encryption *****/
             const user_salt = window.crypto.getRandomValues(new Uint8Array(16));  // salt generation - why Uint8Array(16) ??? TBD 
@@ -90,9 +92,19 @@ export default {
             console.log("this is the encrypted private rsa key: ")
             console.log(rsaEncryptedPrivateKey)
 
+            console.log("private key encrypted arraybuffer")
+            console.log(rsaEncryptedPrivateKey.byteLength)
+
+
             /***** RSA private and public keys from type ArrayBuffer to String *****/
             const rsaEncPrivKeyStr = this.arrayBufferToStr(rsaEncryptedPrivateKey);
             const rsaPublicStr = this.arrayBufferToStr(rsaPublic)
+
+            console.log("after conversion to string");
+            console.log(rsaEncPrivKeyStr);
+            console.log("longeur private key " + rsaEncPrivKeyStr.length)
+            console.log(rsaPublicStr);
+            console.log("longeur public key " + rsaPublicStr.length)
 
             /***** elements to send the server *****/
             var toServer = {
@@ -191,12 +203,12 @@ export default {
         // encryption function 
         // encryption function 
         encryptRsaKey: async function(userPassword, rsaPrivateKeyPlain, initVector, userSalt) {
-            // encoding of the plaintext so that the format is correct
-            let enc = new TextEncoder();
-            var plaintext = enc.encode(rsaPrivateKeyPlain);
-            console.log(plaintext);
+            // // encoding of the plaintext so that the format is correct
+            // let enc = new TextEncoder();
+            // var plaintext = enc.encode(rsaPrivateKeyPlain);
+            // console.log(plaintext);
 
-            // AES key and IV
+            // AES key
             let keyMaterial = await this.aesKeyMaterial(userPassword);
             var key = await this.aesKey(keyMaterial, userSalt);  // var or let ? not sure...
 
@@ -208,7 +220,7 @@ export default {
                     tagLength: 128 // cf documentation to see the allowed lengths
                 },
                 key,
-                plaintext // data to cipher
+                rsaPrivateKeyPlain // data to cipher
             ); // return an ArrayBuffer
             
             return ciphertext;

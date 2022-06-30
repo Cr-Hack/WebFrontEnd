@@ -1,7 +1,7 @@
 <template>
   <div>
     <nav-bar-home/>
-    <img src="../assets/logo1.png" alt="">
+    <img src="../assets/logo.png" alt="">
     <div class="body-white">
         <div class="txt-descr">
             <div class="section">
@@ -68,7 +68,7 @@ Nous croyons en un monde où la vie privée sera la priorité de tout le monde c
         </div>
 
     </div>
-
+  </div>
 </template>
 
 <script>

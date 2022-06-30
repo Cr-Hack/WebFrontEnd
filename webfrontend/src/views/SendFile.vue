@@ -1,35 +1,45 @@
 <template>
-    <nav-bar/>
-    <div class="send-box">
-        <h2 id="title">Formulaire d'envoi chiffré</h2>
-        <form class="formy">
-            <div class="user-box" id="input-file">
-                <img id="file-ip-1-preview"/>
-                <label for="fileInput">
-                    <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3> 
-                    <i class="fa-solid fa-file-circle-plus fa-2xl"></i>
-                    <input id="fileInput" type="file" required="required" @change="showPreview($event);">
-                </label>
-            </div>
-            <div class="user-box">
-                <input type="text" id="dest" required="required" placeholder="Destinataire">
-            </div>
-        </form>
-        <div class="btn">
-            <button type="submit" id="confirm" class="btn_l">Confirmer</button>
-            <button type="submit" id="del" class="btn_l">Annuler</button>
+    <div>
+        <nav-bar />
+        <div class="send-box">
+            <h2 id="title">Formulaire d'envoi chiffré</h2>
+            <form class="formy" method="post" @submit.prevent="handleFile()">
+                <div class="user-box" id="input-file">
+                    <img id="file-ip-1-preview" />
+                    <label for="fileInput">
+                        <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3>
+                        <i class="fa-solid fa-file-circle-plus fa-2xl"></i>
+                        <input id="fileInput" type="file" required="required" @change="showPreview($event);">
+                    </label>
+                </div>
+                <div class="user-box">
+                    <input type="text" id="dest" required="required" placeholder="Destinataire">
+                </div>
+
+                <div class="btn">
+                    <button type="submit" id="confirm" class="btn_l">Confirmer</button>
+                    <button type="reset" id="del" class="btn_l">Annuler</button>
+                </div>
+            </form>
+
         </div>
     </div>
 </template>
 
 <script>
 import NavBar from './sidebar/NavBar.vue'
+const axios = require('axios')
 
 export default {
     components : {NavBar}, 
     setup() {
         
     },
+    data() {
+        return {
+            fileToSend: ''
+        }
+    }, 
     methods:{
         showPreview(event){
             if(event.target.files.length > 0){
@@ -37,8 +47,131 @@ export default {
                 var preview = document.getElementById("file-ip-1-preview");
                 preview.src = src;
             }
+        },
+
+        handleFile: async function () {
+            //alert("j'ai cliqué sur le bouton confirmer")
+            var selectedFile = document.getElementById("fileInput").files[0];  // is a complex object (blob) ? 
+
+            console.log(selectedFile)
+            console.log(typeof(selectedFile))
+            console.log(selectedFile.text())
+
+            var arrayBuf = await selectedFile.arrayBuffer()  // convert the file to an arraybuffer
+
+            console.log("type of arrayBuff")
+            console.log(typeof(arrayBuf))
+            console.log(arrayBuf)
+
+            // AES key and IV
+            const symKey = this.aesKeyGeneration() // return an CryptoKey type
+            const init_vector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
+
+            // file encryption 
+            var encryptedFile = this.encryptFile(arrayBuf, init_vector, symKey);  // returns an ArrayBuffer
+
+
+            /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
+            // fetch the receiver's public RSA key (type string)
+            const receiverPublicKeyStr = await axios.post()
+            const senderPublicKeyStr = await axios.post()
+
+            // convert the string to ArrayBuffer
+            const receiverPublicKeyAB = this.strToArrayBuf(receiverPublicKeyStr)  
+            const senderPublicKeyAB = this.strToArrayBuf(senderPublicKeyStr) 
+
+            // convert the ArrayBuffer to CryptoKey (with the importKey function)
+            const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
+            const senderPubKeyCryptoKey = await this.importPubKey(senderPublicKeyAB)
+
+            // encrypt the aes sym key with the sender and receiver public key
+            const receiverEncSymKey = await this.rsaEncryptSymKey(receiverPubKeyCryptoKey, symKey)  // returns an arraybuffer
+            const senderEncSymKey = await this.rsaEncryptSymKey(senderPubKeyCryptoKey, symKey)
+
+            // convert the array buffers to string 
+            const receiverEncSymKeyStr = this.arrayBufferToStr(receiverEncSymKey)  // to be sent to the server
+            const senderEncSymKeyStr = this.arrayBufferToStr(senderEncSymKey)
+
+            const toServer = {
+                file: encryptedFile,
+                receiverEncSymKey: receiverEncSymKeyStr,
+                senderEncSymKey: senderEncSymKeyStr
+            }
+
+            axios.post('', toServer)
+                .then(function (response) {
+                    console.log(response);
+                    alert("votre fichier a bien été envoyé")
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        },
+
+        aesKeyGeneration: async function () {
+            let key = await window.crypto.subtle.generateKey(
+                {
+                    name: "AES-GCM",
+                    length: 256
+                },
+                true,
+                ["encrypt", "decrypt"]
+            );
+            return key
+        }, 
+
+        encryptFile: async function (filePlain, initVector, symKey) {  // filePlain is the file to encrypt, (type = arraybuffer)
+            let ciphertext = await window.crypto.subtle.encrypt(
+                {
+                    name: "AES-GCM",
+                    iv: initVector,
+                    tagLength: 128 // cf documentation to see the allowed lengths
+                },
+                symKey,
+                filePlain // data to cipher
+            ); // return an ArrayBuffer
+            return ciphertext;
+        }, 
+
+        strToArrayBuf: function (str) {
+            const buf = new ArrayBuffer(str.length);
+            const bufView = new Uint8Array(buf);
+            for (let i = 0, strLen = str.length; i < strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+        },
+
+        arrayBufferToStr: function (arrayBuf) {
+            return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
+        },
+
+        importPubKey: async function (keyData) {
+            let cryptoKey = await window.crypto.subtle.importKey(
+                "spki", 
+                keyData,
+                "RSA-OAEP",
+                {
+                    name: "RSA-OAEP",
+                    hash: "SHA-256"  // WHY this ??? TBD
+                },
+                true,
+                ["encrypt"]
+            )
+            return cryptoKey
+        },
+
+        rsaEncryptSymKey:async function (aesKeyPlain, rsaPublicKey) {
+            let ciphertext = await window.crypto.subtle.encrypt(
+                {
+                    name: "RSA-OAEP"
+                },
+                rsaPublicKey,
+                aesKeyPlain  // data to encrypt
+            );
+            return ciphertext
         }
-    }
+    }        
 }
 </script>
 

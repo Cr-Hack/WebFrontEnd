@@ -1,30 +1,32 @@
 <template>
-  <nav-bar/>
-  <div class="table-wrapper">
-    <table class="style-table">
-        <thead>
-            <tr>
-                <th>De</th>
-                <th>A</th>
-                <th>Fichier</th>
-                <th>Date/heure</th>
-                <th>Télécharger</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr v-for="(info, index) of infos" :key="index">
-                <td>{{info.de}}</td>
-                <td>{{info.a}}</td>
-                <td>{{info.fichier}}</td>
-                <td>{{info.dateheure}}</td>
-                <td>{{info.downloadable}}</td>
-            </tr>
-        </tbody>
-    
-    
-    </table>
-  
-  </div>
+    <div>
+        <nav-bar />
+        <div class="table-wrapper">
+            <table class="style-table">
+                <thead>
+                    <tr>
+                        <th>De</th>
+                        <th>A</th>
+                        <th>Fichier</th>
+                        <th>Date/heure</th>
+                        <th>Télécharger</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(info, index) of infos" :key="index">
+                        <td>{{ info.de }}</td>
+                        <td>{{ info.a }}</td>
+                        <td>{{ info.fichier }}</td>
+                        <td>{{ info.dateheure }}</td>
+                        <td>{{ info.downloadable }}</td>
+                    </tr>
+                </tbody>
+
+
+            </table>
+
+        </div>
+    </div>
 </template>
 
 <script>
