@@ -1,7 +1,7 @@
 <template>
-    
+    <nav-bar-home/>
         <h2>
-            ceci est la page pour s'inscrire. 
+           Inscription
         </h2>
 
 
@@ -36,6 +36,7 @@
 </template>
 
 <script>
+
 export default {
     name : "SignUp", 
     setup(){
@@ -55,7 +56,6 @@ export default {
 }
 </script>
 
-<style>
-
+<style scoped>
 
 </style>

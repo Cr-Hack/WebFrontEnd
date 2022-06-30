@@ -97,7 +97,6 @@ label{
 #dest{
     margin-top: 10px;
     border: none;
-    appearance: none;
     background-color: #F2F2F2;
     padding: 12px;
     border-radius: 3px;

@@ -1,6 +1,5 @@
 <template>
   <router-view/>
-
 </template>
 
 <script>
@@ -11,6 +10,8 @@ export default {
   name: 'App',
   components: {
     //HomePage, 
+  },
+  mounted(){
   }
 }
 </script>
