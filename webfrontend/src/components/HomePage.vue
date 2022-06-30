@@ -1,4 +1,5 @@
 <template>
+  <div>
     <nav-bar-home/>
     <img src="../assets/logo1.png" alt="">
     <div class="body-white">
@@ -34,38 +35,39 @@ Nous croyons en un monde où la vie privée sera la priorité de tout le monde c
             <div class="student Myriam" >
                 <img src="../assets/myriam1.jpg" alt="photo de myriam"/>
                 <h4>Myriam Amor</h4>
+
             </div>
 
             <div class="student Josephine">
-                <img src="../assets/josephine1.jpg" alt="photo de josephine"/>
+                <img src="../assets/josephine2.png" alt="photo de josephine"/>
                 <h4>Joséphine de Lestrange</h4>
             </div>
 
             <div class="student Antoine">
-                <img src="../assets/antoine1.jpg" alt="photo d antoine"/>
-                <h4>Antoine Gay</h4>
-            </div>
+                    <img src="../assets/antoine.png" alt="photo d antoine"/>
+                    <h4>Antoine Gay</h4>
+             </div>
             
             <div class="student Helene">
                 <img src="../assets/helene1.png" alt="photo d helene"/>
                 <h4>Helene Huang</h4>
             </div>
             
+
             <div class="student Ari">
                 <img src="../assets/ari1.jpg" alt="photo d ari"/>
                 <h4>Ariprakash Ranganadin</h4>
             </div>
-            
-            <div class="student Clément">
-                <img src="../assets/clement1.jpg" alt="photo de clement"/>
-                <h4>Clément Rostagni</h4>
-            </div>
+
+                <div class="student Clément">
+                    <img src="../assets/clement1.jpg" alt="photo de clement"/>
+                    <h4>Clément Rostagni</h4>
+                </div>
+
         
         </div>
 
     </div>
-
-       
 
 </template>
 

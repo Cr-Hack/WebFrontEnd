@@ -1,17 +1,19 @@
 <template>
-  <router-view/>
+        <router-view></router-view>
+        <FooterVue/>
+
 </template>
 
 <script>
 //import HomePage from './components/HomePage.vue'
+import FooterVue from './components/Footer.vue'
 
 
 export default {
   name: 'App',
   components: {
     //HomePage, 
-  },
-  mounted(){
+    FooterVue
   }
 }
 </script>
@@ -50,16 +52,6 @@ export default {
         width : 100px ; 
     }
 
-         footer {
-        background-color: #f7b32b ; 
-    }
-
-    .txt-footer{
-        height: auto;
-        color: #922d50;
-        padding: 2%;
-        margin : 0% ; 
-    }
 
     a {
         text-decoration: none;
