@@ -75,6 +75,9 @@ export default {
             var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
 
 
+            console.log("LE TOKEN LIGNE 78")
+            console.log(this.$store.getters.token)
+
             /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
             // fetch the receiver's public RSA key (type string)
             const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
@@ -126,6 +129,7 @@ export default {
                 senderIV: this.arrayBufferToStr(senderEncIv)
             }
 
+            
             axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token } })
                 .then(function (response) {
                     console.log(response);
