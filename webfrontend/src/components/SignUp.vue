@@ -86,12 +86,11 @@ export default {
             console.log("longeur public key " + rsaPublic.byteLength)
 
             /***** RSA private key encryption *****/
-            const user_salt = window.crypto.getRandomValues(new Uint8Array(16));  // salt generation - why Uint8Array(16) ??? TBD 
-            const init_vector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
+            const user_salt = window.crypto.getRandomValues(new ArrayBuffer(16));  // salt generation - why arrayBuffer(16) ??? TBD 
+            const init_vector = window.crypto.getRandomValues(new ArrayBuffer(12))  // initialisation vector generation
             const rsaEncryptedPrivateKey = await this.encryptRsaKey(this.pwd_verif, rsaPrivate, init_vector, user_salt);  // encryption
             console.log("this is the encrypted private rsa key: ")
             console.log(rsaEncryptedPrivateKey)
-
             console.log("private key encrypted arraybuffer")
             console.log(rsaEncryptedPrivateKey.byteLength)
 
