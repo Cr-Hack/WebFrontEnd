@@ -73,27 +73,36 @@ export default {
             const fileAesKeyAB = this.strToArrayBuffer(fileAesKeyStr)
             const fileIvAB = this.strToArrayBuffer(fileIvStr)
 
+            console.log("1")
             // reconstruction of the AES sym key with the userpassword the iv and the salt
             const keyMaterial = await this.aesKeyMaterial(userPassword);
             const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltAB);
 
+            console.log("2")
+            console.log(userToDecRsaPrivIvAB)
+            console.log(aesKeyToDecryptRsaCryptoKey)
+            console.log(userRsaPrivateKeyAB)
             // decryption of the RSA private key 
             const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvAB, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
 
+            console.log("3")
             // import the RSA private key to CryptoKey type 
             const rsaPrivateKeyCryptoKey = await this.importRsaPrivateKey(rsaPrivateKeyPlain)
 
+            console.log("4")
             // decryption of the AES sym key (used to decrypt the file) and import it to CryptoKey
             const fileAesKeyABPlain = await this.rsaDecrypt(fileAesKeyAB, rsaPrivateKeyCryptoKey)
             const fileAesKeyCryptoKey = await this.importAesKey(fileAesKeyABPlain)
             
+            console.log("4")
             // decryption of the IV used to decrypt the file
             const fileIvPlain = await this.rsaDecrypt(fileIvAB, rsaPrivateKeyCryptoKey)
 
-
+            console.log("5")
             /*** decryption of the file ***/
             const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
             
+            console.log("6")
             /*** download file to computer ***/
             // convert the ArrayBuffer file back to a blob
             const blob = new Blob(filePlainAB, { type: fileType })  // we need to set the 'type' option of the blob ?
@@ -155,6 +164,7 @@ export default {
         
         // actual decryption algorithm
         aesDecryptRsaPrivateKey: async function (initVector, aesKey, rsaPrivateEncKey){
+            console.log("avant de rentrer dans le déchiffrement")
             let plaintext = await window.crypto.subtle.decrypt(
                 {
                     name: "AES-GCM",
@@ -163,6 +173,7 @@ export default {
                 aesKey,
                 rsaPrivateEncKey
             );
+            console.log("avant de retourner la clé rsa déchiffrée...")
             return plaintext
         }, 
 
