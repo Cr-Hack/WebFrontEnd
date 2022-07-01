@@ -18,7 +18,7 @@
                         <td>{{ info.a }}</td>
                         <td>{{ info.fichier }}</td>
                         <td>{{ info.dateheure }}</td>
-                        <td>{{ info.downloadable }}</td>
+                        <td><button class="btn" @click.prevent="downloadFile(info.fileID)"> Télécharger </button></td>
                     </tr>
                 </tbody>
             </table>
@@ -35,7 +35,7 @@ export default {
 
     data(){
         return{
-        infos : []
+        infos : this.created()
         }
     },
     methods: {
@@ -56,10 +56,12 @@ export default {
             const userToDecRsaPrivIvStr = this.$store.getters.user.iv  // string type
             const userRsaPrivateKeyStr = this.$store.getters.user.privateKey   // string type
 
-            const dataFromServer = await axios.post("http://localhost:5000/file/download", {fileID: fileID} )
-            const fileToDecryptStr = dataFromServer.file  // string type
-            const fileAesKeyStr = dataFromServer.fileaeskey  // string type
-            const fileIvStr = dataFromServer.fileivstr // string type
+            const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID }, { headers: { token: this.$store.getters.token } } )
+            const fileToDecryptStr = dataFromServer.data  // string type
+            const fileAesKeyStr = dataFromServer.publickey // string type
+            const fileIvStr = dataFromServer.iv // string type
+            const fileType = dataFromServer.type
+            const fileName = dataFromServer.name
 
             // convert everything from string to ArrayBuffer
             const userToDecRsaPrivSaltAB = this.strToArrayBuf(userToDecRsaPrivSaltStr)
@@ -88,10 +90,18 @@ export default {
 
 
             /*** decryption of the file ***/
-            const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)
-
-            console.log(filePlainAB)
-
+            const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
+            
+            /*** display file ***/
+            // convert the ArrayBuffer file back to a blob
+            const blob = new Blob(filePlainAB, { type: fileType })  // we need to set the 'type' option of the blob ?
+            const downloadUrl = URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.hrel = downloadUrl
+            link.download = fileName
+            document.body.appendChild(link)
+            link.click()
+            URL.revokeObjectURL(downloadUrl)
 
         },
         
