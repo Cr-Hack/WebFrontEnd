@@ -86,12 +86,11 @@ export default {
             console.log("longeur public key " + rsaPublic.byteLength)
 
             /***** RSA private key encryption *****/
-            const user_salt = window.crypto.getRandomValues(new Uint8Array(16));  // salt generation - why Uint8Array(16) ??? TBD 
+            const user_salt = window.crypto.getRandomValues(new Uint8Array(16));  // salt generation - why arrayBuffer(16) ??? TBD 
             const init_vector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
             const rsaEncryptedPrivateKey = await this.encryptRsaKey(this.pwd_verif, rsaPrivate, init_vector, user_salt);  // encryption
             console.log("this is the encrypted private rsa key: ")
             console.log(rsaEncryptedPrivateKey)
-
             console.log("private key encrypted arraybuffer")
             console.log(rsaEncryptedPrivateKey.byteLength)
 
@@ -134,7 +133,7 @@ export default {
             try {
                 let response = await axios.post('http://localhost:5000/auth/register', toServer)
                 console.log(response);
-                //alert("Inscription réussie")
+                alert("Inscription réussie")
                 this.$router.push({ name: 'SignIn' })
             } catch (error) {
                 console.log(error);
@@ -253,5 +252,60 @@ export default {
 </script>
 
 <style scoped>
+
+.container3{
+        padding : 2% ;
+    }
+
+    .container3 .input-group {
+        width: 75%;
+        height: 50px; 
+        margin-bottom: 5%;
+    }
+
+    .container3 .input-group input {
+        width: 100%;
+        height: 100%;
+        border: 2px solid #2e86ab;
+        padding: 15px 20px;
+        font-size: 1rem;
+        border-radius: 30px;
+        transition: .3s;
+    }
+
+    .container3 .input-group input:focus,
+    .container3 .input-group input:valid {
+        border-color: #2e86ab;
+    }
+
+    .container3 .input-group-btn{
+        height: 50px;
+        margin-bottom: 3%;
+    }
+
+    .container3 .input-group-btn .btn {
+        display: block;
+        width: 50%;
+        padding: 2% 2%;
+        text-align: center;
+        border: none;
+        background: #2e86ab;
+        outline: none;
+        border-radius: 30px;
+        font-size: 1.2rem;
+        color: #FFF;
+        cursor: pointer;
+        transition: .3s;
+        margin-bottom: 3%;
+    }
+
+    .container3 .input-group-btn .btn:hover {
+        transform: translateY(-5px);
+        background: #266e8d;
+    }
+
+    .img2{
+        margin: 2%;
+    }
 
 </style>

@@ -65,10 +65,10 @@ export default {
 
             // AES key and IV
             const symKey = this.aesKeyGeneration() // return an CryptoKey type
-            const init_vector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
+            const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
 
             // file encryption 
-            var encryptedFile = this.encryptFile(arrayBuf, init_vector, symKey);  // returns an ArrayBuffer
+            var encryptedFile = this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
 
 
             /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
@@ -84,18 +84,31 @@ export default {
             const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
             const senderPubKeyCryptoKey = await this.importPubKey(senderPublicKeyAB)
 
+            // convert the AES sym key (used to encrypt file) from CryptoKey to ArrayBuffer (export)
+            const symKeyAB = await window.crypto.subtle.exportKey("raw", symKey)  // export to an ArrayBuffer type
+
             // encrypt the aes sym key with the sender and receiver public key
-            const receiverEncSymKey = await this.rsaEncryptSymKey(receiverPubKeyCryptoKey, symKey)  // returns an arraybuffer
-            const senderEncSymKey = await this.rsaEncryptSymKey(senderPubKeyCryptoKey, symKey)
+            const receiverEncSymKey = await this.rsaEncrypt(symKeyAB, receiverPubKeyCryptoKey)  // returns an arraybuffer
+            const senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
 
             // convert the array buffers to string 
             const receiverEncSymKeyStr = this.arrayBufferToStr(receiverEncSymKey)  // to be sent to the server
             const senderEncSymKeyStr = this.arrayBufferToStr(senderEncSymKey)
 
+            /***** init vector encryption for sender and receiver *****/
+            // convert uint8array to arraybuffer
+            const ivArrayBuf = this.uint8ArrayToArrayBuffer(initVector)
+
+            // encrypt the IVs with RSA public keys
+            const receiverEncIv = this.rsaEncrypt(ivArrayBuf, receiverPubKeyCryptoKey)
+            const senderEncIv = this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
+
             const toServer = {
                 file: encryptedFile,
                 receiverEncSymKey: receiverEncSymKeyStr,
-                senderEncSymKey: senderEncSymKeyStr
+                senderEncSymKey: senderEncSymKeyStr,
+                receiverEncInitVector: receiverEncIv,
+                senderEncInitVector: senderEncIv
             }
 
             axios.post('', toServer)
@@ -146,7 +159,11 @@ export default {
             return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
         },
 
-        importPubKey: async function (keyData) {
+        uint8ArrayToArrayBuffer: function (unit8array) {
+            return unit8array.buffer.slice(unit8array.byteOffset, unit8array.byteLength + unit8array.byteOffset)
+        },
+
+        importPubKey: async function (keyData) {  // the type of keyData is ArrayBuffer
             let cryptoKey = await window.crypto.subtle.importKey(
                 "spki", 
                 keyData,
@@ -161,13 +178,13 @@ export default {
             return cryptoKey
         },
 
-        rsaEncryptSymKey:async function (aesKeyPlain, rsaPublicKey) {
+        rsaEncrypt:async function (aesKeyOrIvPlain, rsaPublicKey) {
             let ciphertext = await window.crypto.subtle.encrypt(
                 {
                     name: "RSA-OAEP"
                 },
                 rsaPublicKey,
-                aesKeyPlain  // data to encrypt
+                aesKeyOrIvPlain  // data to encrypt
             );
             return ciphertext
         }
