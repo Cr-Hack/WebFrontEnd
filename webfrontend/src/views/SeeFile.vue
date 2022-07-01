@@ -49,6 +49,23 @@ export default {
                 })
         }, 
 
+        // function to download file : fetch the data, decrypt it, and convert it back to a file (blob)
+        download: async function () {
+            const userPassword = this.$store.getters.user.pwd
+            const userToDecRsaPrivSaltStr = this.$store.getters.user.salt  // string type
+            const userToDecRsaPrivIvStr = this.$store.getters.user.iv  // string type
+            const userRsaPrivateKeyStr = this.$store.getters.user.privateKey   // string type
+            const dataToDecryptStr = axios.post()  // string type
+            const fileAesKeyStr = axios.post()  // string type
+            const fileIvStr = axios.post()  // string type
+
+
+
+
+
+        },
+        
+
         /***** decryption of RSA private key with AES - WE NEED : userpassword, iv, salt *****/
         
         // convert the iv and the salt (string) back to ArrayBuffer

@@ -59,6 +59,7 @@ export default {
                         email: this.email,
                         publicKey: result.publicKey,
                         privateKey: result.privateKey,
+                        pwd: this.pwd,
                         iv: result.iv,
                         salt: result.salt
                     });
