@@ -16,7 +16,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -25,7 +25,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -34,7 +34,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -61,7 +61,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -131,7 +131,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -140,7 +140,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {

@@ -1,7 +1,8 @@
 <template>
 <nav>
-    <div>
-        <router-link to="/" id="title">Cr'Hack Share</router-link>
+    <div class="container-rightSide">
+        <img src="../../assets/logo.png" alt="Cr'Hack">
+        <i id="account" class="fa-solid fa-user"></i>
     </div>
     <div class="nav_link">
         <router-link to="/MainPage">Guide</router-link>
@@ -17,9 +18,6 @@
 
 <script>
 export default {
-    methods:{
-    }
-
 }
 </script>
 
@@ -35,7 +33,20 @@ nav{
     height: auto;
 }
 
+img{
+    width: 40px;
+}
 
+.container-rightSide{
+    width:100px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+#account{
+    margin-top: 10px;
+}
 
 .nav_link{
     width: 350px;
@@ -71,7 +82,7 @@ nav{
 
 @media (max-width: 400px){
     .nav_link{
-        display:none;
+        flex-direction: column;
     }
 
 }

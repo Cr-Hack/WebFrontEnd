@@ -1,6 +1,6 @@
 <template>
    <footer>
-            <h4 class="txt-footer">Copyrigth : Cr'Hack </h4>
+            <h4 class="txt-footer">Copyrigth : Cr'Hack</h4>
     </footer>
 </template>
 
@@ -14,6 +14,8 @@ export default {
 <style>
     
     footer {
+        position: fixed;
+        bottom: 0;
         background-color: #f7b32b ; 
     }
 

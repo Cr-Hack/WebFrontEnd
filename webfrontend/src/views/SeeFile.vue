@@ -17,11 +17,10 @@
                 <td>{{info.a}}</td>
                 <td>{{info.fichier}}</td>
                 <td>{{info.dateheure}}</td>
-                <td>{{info.downloadable}}</td>
+                <td v-if="getData(index)"><button><i class="fa-solid fa-download"></i></button></td>
+                
             </tr>
         </tbody>
-    
-    
     </table>
   
   </div>
@@ -36,7 +35,7 @@ export default {
 
   data(){
     return{
-      infos : []
+      infos : [],
     }
   },
   async created(){
@@ -47,12 +46,20 @@ export default {
     .catch((err) => {
       console.log(err)
     })
-  }
-
+  },
+  methods:{
+    getData: function(index) {
+        if (this.infos[index].downloadable==true){
+          return true;
+        }
+        return false;
+      }
+    }
 }
+
 </script>
 
-<style>
+<style scoped>
 .table-wrapper{
   display: flex;
   flex: wrap;
@@ -69,6 +76,31 @@ th{
   top: 0px;
 }
 
+button{
+  
+  width: 100%;
+  max-width: 100px;
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  border: 1px solid var(--red);
+  text-align: left;
+  vertical-align: top;
+  padding: calc(.875rem - 3px) 63px calc(.875rem - 3px) 15px;
+  background-color: #00000000;
+  font-size: 14px;
+  letter-spacing: 0.16px;
+  min-height: 48px;
+  line-height: 1.29;
+  color: var(--red);
+  font-weight: 400;
+  transition: background 70ms cubic-bezier(0,0,.38,.9),box-shadow 70ms cubic-bezier(0,0,.38,.9),border-color 70ms cubic-bezier(0,0,.38,.9),outline 70ms cubic-bezier(0,0,.38,.9);
+}
+
+button:hover{
+    background: var(--red);
+    color: #fff;
+}
 .style-table{
   font-size: 12px;
   font-weight: normal;
