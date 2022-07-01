@@ -53,15 +53,15 @@ export default {
                 }
                 try{
                     let result = await axios.post("http://localhost:5000/auth/login", data)
-                    alert ("Connexion réussie !")
-                    this.$store.dispatch("setToken", result.token);
+                    //alert ("Connexion réussie !")
+                    this.$store.dispatch("setToken", result.data.token);
                     this.$store.dispatch("addUser", {
                         email: this.email,
-                        publicKey: result.publicKey,
-                        privateKey: result.privateKey,
+                        publicKey: result.data.publicKey,
+                        privateKey: result.data.privateKey,
                         pwd: this.pwd,
-                        iv: result.iv,
-                        salt: result.salt
+                        iv: result.data.iv,
+                        salt: result.data.salt
                     });
                     this.$router.push({ name: 'Main Page' })
                 }catch(error){

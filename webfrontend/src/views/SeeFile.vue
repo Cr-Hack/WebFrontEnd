@@ -14,11 +14,10 @@
                 </thead>
                 <tbody>
                     <tr v-for="(info, index) of infos" :key="index">
-                        <td>{{ info.de }}</td>
-                        <td>{{ info.a }}</td>
-                        <td>{{ info.fichier }}</td>
-                        <td>{{ info.dateheure }}</td>
-                        <td>{{ info.downloadable }}</td>
+                        <td>{{ info.sender }}</td>
+                        <td>{{ info.other == info.sender ? this.$store.getters.user.email : info.other }}</td>
+                        <td>{{ info.name }}</td>
+                        <td>{{ info.datedeposite }}</td>
                     </tr>
                 </tbody>
             </table>
@@ -35,14 +34,15 @@ export default {
 
     data(){
         return{
-        infos : []
+        infos : this.created()
         }
     },
     methods: {
         created: async function (){
-            axios.get('http://localhost:3000')
+            axios.post('http://localhost:5000/file/view', {}, {headers:{token: this.$store.getters.token}})
                 .then((response) => {
-                    this.infos = response.data
+                    this.infos = response.data.files
+					console.log(response)
                 })
                 .catch((err) => {
                     console.log(err)
@@ -91,8 +91,6 @@ export default {
             const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)
 
             console.log(filePlainAB)
-
-
         },
         
 
