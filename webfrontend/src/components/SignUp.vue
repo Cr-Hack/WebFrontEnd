@@ -88,7 +88,7 @@ export default {
             /***** RSA private key encryption *****/
             const user_salt = window.crypto.getRandomValues(new Uint8Array(16));  // salt generation - why Uint8Array(16) ??? TBD 
             const init_vector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
-            const rsaEncryptedPrivateKey = await this.encryptRsaKey(this.pwdVerif, rsaPrivate, init_vector, user_salt);  // encryption
+            const rsaEncryptedPrivateKey = await this.encryptRsaKey(this.pwd_verif, rsaPrivate, init_vector, user_salt);  // encryption
             console.log("this is the encrypted private rsa key: ")
             console.log(rsaEncryptedPrivateKey)
 
@@ -98,7 +98,20 @@ export default {
 
             /***** RSA private and public keys from type ArrayBuffer to String *****/
             const rsaEncPrivKeyStr = this.arrayBufferToStr(rsaEncryptedPrivateKey);
-            const rsaPublicStr = this.arrayBufferToStr(rsaPublic)
+            const rsaPublicStr = this.arrayBufferToStr(rsaPublic);
+
+            console.log("DANS VUE.JS")
+            console.log("the private key in string")
+            console.log(rsaEncPrivKeyStr)
+
+            console.log("back to the array buffer")
+            let back2ab = this.strToArrayBuffer(rsaEncPrivKeyStr)
+            console.log(back2ab)
+
+            let stringagain = this.arrayBufferToStr(back2ab)
+
+            console.log("are they the same? ")
+            console.log(rsaEncPrivKeyStr === stringagain)
 
             console.log("after conversion to string");
             console.log(rsaEncPrivKeyStr);
@@ -158,6 +171,15 @@ export default {
 
         arrayBufferToStr: function (arrayBuf) {
             return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
+        },
+
+        strToArrayBuffer: function (str) {
+            const buf = new ArrayBuffer(str.length);
+            const bufView = new Uint8Array(buf);
+            for (let i = 0, strLen = str.length; i < strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
         },
         
 
