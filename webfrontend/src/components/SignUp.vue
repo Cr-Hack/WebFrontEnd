@@ -10,34 +10,22 @@
         </h2>
 
 
-        <div class="container3">
-            <form action="" method="post" @submit.prevent="goToSignIn()">
-                <div class="input-group">
-                    <input v-model="fname" class="field" type="text" placeholder="Prénom" required>
-                </div>
-                <div class="input-group">
-                    <input v-model="lname" class="field" type="text" placeholder="Nom" required>
-                </div>
-                <div class="input-group">
-                    <input v-model="email" class="field" type="email" name="" id="email" placeholder="Email" required>
-                </div>
-                <div class="input-group">
-                    <input v-model="pwd" class="field" type="password" name="" id="pwd" placeholder="Mot de passe"
+        
+        <form class="container3" action="" method="post" @submit.prevent="goToSignIn()">
+                
+                <input class="input-group" v-model="fname" type="text" placeholder="Prénom" required>
+                <input class="input-group" v-model="lname" type="text" placeholder="Nom" required>
+                <input class="input-group" v-model="email" type="email" name="" id="email" placeholder="Email" required>
+                <input class="input-group" v-model="pwd" type="password" name="" id="pwd" placeholder="Mot de passe"
                         required>
-                </div>
-                <div class="input-group">
-                    <input v-model="pwd_verif" class="field" type="password" name="" id="pwd_verif"
+                <input class="input-group" v-model="pwd_verif" type="password" name="" id="pwd_verif"
                         placeholder="Confirmation du mot de passe" required>
-                </div>
-                <div class="input-group-btn">
-                    <button class="btn" type="submit">C'est parti ! </button>
-                </div>
-                <div class="input-group-btn">
-                    <button class="btn" type="reset">Reset</button>
-                </div>
+                <button class="input-group-btn" type="submit">C'est parti ! </button>
+                <button class="input-group-btn" type="reset">Reset</button>
+                
+        </form>
 
-            </form>
-        </div>
+        <button @click="hashencryption()">Test</button>
     </div>
 </template>
 
@@ -140,14 +128,6 @@ export default {
                 if(error.response.data.error) alert(error.response.data.error)
             }
 
-            
-            /*if (this.pwd != this.pwd_verif){
-                    alert ("Les champs de mot de passe sont différents ")
-                }
-                else {
-                    alert("Inscription réussie") 
-                    this.$router.push({name : 'SignIn'})  
-                }*/
         },
 
         // RSA key generation
@@ -246,46 +226,65 @@ export default {
             
             return ciphertext;
 
-        }
+        }, 
+
+        hashencryption : async function (){
+            
+            const message1 = this.pwd;
+            const message2= this.pwd_verif;
+
+            const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
+            const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
+            const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
+            const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+            console.log(hashHex_1);
+
+            const msgUint8_2 = new TextEncoder().encode(message2);                           
+            const hashBuffer_2 = await crypto.subtle.digest('SHA-256', msgUint8_2);           
+            const hashArray_2 = Array.from(new Uint8Array(hashBuffer_2));                     
+            const hashHex_2 = hashArray_2.map(b => b.toString(16).padStart(2, '0')).join(''); 
+            console.log(hashHex_2);
+        }, 
+
     }
 }
 </script>
 
 <style scoped>
 
-.container3{
+    .container3{
         padding : 2% ;
+        margin : 0 auto ; 
+        display : flex ; 
+        flex-direction: column;
+        justify-content: center;
     }
 
     .container3 .input-group {
         width: 75%;
-        height: 50px; 
-        margin-bottom: 5%;
-    }
-
-    .container3 .input-group input {
-        width: 100%;
         height: 100%;
         border: 2px solid #2e86ab;
-        padding: 15px 20px;
+        padding: 20px 20px;
         font-size: 1rem;
         border-radius: 30px;
         transition: .3s;
+        margin-right: auto;
+        margin-left: auto;
+        margin-bottom: 2%;
+        
     }
 
-    .container3 .input-group input:focus,
-    .container3 .input-group input:valid {
+    .container3 .input-group :focus,
+    .container3 .input-group :valid {
         border-color: #2e86ab;
     }
 
-    .container3 .input-group-btn{
-        height: 50px;
-        margin-bottom: 3%;
-    }
+    .container3 .input-group-btn  {
 
-    .container3 .input-group-btn .btn {
+
         display: block;
         width: 50%;
+        height: 50px;
         padding: 2% 2%;
         text-align: center;
         border: none;
@@ -297,9 +296,11 @@ export default {
         cursor: pointer;
         transition: .3s;
         margin-bottom: 3%;
+        margin-right: auto;
+        margin-left: auto;
     }
 
-    .container3 .input-group-btn .btn:hover {
+    .container3 .input-group-btn:hover {
         transform: translateY(-5px);
         background: #266e8d;
     }

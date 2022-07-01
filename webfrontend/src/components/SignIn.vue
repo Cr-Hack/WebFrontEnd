@@ -5,16 +5,14 @@
         </nav>
 
         <h2>
-            ceci est la page pour se connecter. 
+            Connexion
         </h2>
 
 
             <form class="container3" action="" method="post" @submit.prevent="goToMainPage">
 
                 <input class="input-group" v-model="email" type="email" name="email" id="" placeholder="Email" required="required">
-                
                 <input class="input-group" v-model="pwd" type="password" name="pwd" id="" placeholder="Mot de passe" required="required">
-        
                 <button class="input-group-btn btn" type="submit">Se connecter</button>
             </form>
     </div>
@@ -81,7 +79,6 @@ export default {
 </script>
 
 <style scoped>
-
 
     .container3{
         padding : 2% ;
