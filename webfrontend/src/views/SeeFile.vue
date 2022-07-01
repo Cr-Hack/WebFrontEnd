@@ -50,17 +50,47 @@ export default {
         }, 
 
         // function to download file : fetch the data, decrypt it, and convert it back to a file (blob)
-        download: async function () {
+        downloadFile: async function (fileID) {
             const userPassword = this.$store.getters.user.pwd
             const userToDecRsaPrivSaltStr = this.$store.getters.user.salt  // string type
             const userToDecRsaPrivIvStr = this.$store.getters.user.iv  // string type
             const userRsaPrivateKeyStr = this.$store.getters.user.privateKey   // string type
-            const dataToDecryptStr = axios.post()  // string type
-            const fileAesKeyStr = axios.post()  // string type
-            const fileIvStr = axios.post()  // string type
+
+            const dataFromServer = await axios.post("http://localhost:5000/file/download", {fileID: fileID} )
+            const fileToDecryptStr = dataFromServer.file  // string type
+            const fileAesKeyStr = dataFromServer.fileaeskey  // string type
+            const fileIvStr = dataFromServer.fileivstr // string type
+
+            // convert everything from string to ArrayBuffer
+            const userToDecRsaPrivSaltAB = this.strToArrayBuf(userToDecRsaPrivSaltStr)
+            const userToDecRsaPrivIvAB = this.strToArrayBuf(userToDecRsaPrivIvStr)
+            const userRsaPrivateKeyAB = this.strToArrayBuffer(userRsaPrivateKeyStr)
+            const dataToDecryptAB = this.strToArrayBuffer(fileToDecryptStr)
+            const fileAesKeyAB = this.strToArrayBuffer(fileAesKeyStr)
+            const fileIvAB = this.strToArrayBuffer(fileIvStr)
+
+            // reconstruction of the AES sym key with the userpassword the iv and the salt
+            const keyMaterial = await this.aesKeyMaterial(userPassword);
+            const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltAB);
+
+            // decryption of the RSA private key 
+            const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvAB, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
+
+            // import the RSA private key to CryptoKey type 
+            const rsaPrivateKeyCryptoKey = await this.importRsaPrivateKey(rsaPrivateKeyPlain)
+
+            // decryption of the AES sym key (used to decrypt the file) and import it to CryptoKey
+            const fileAesKeyABPlain = await this.rsaDecrypt(fileAesKeyAB, rsaPrivateKeyCryptoKey)
+            const fileAesKeyCryptoKey = await this.importAesKey(fileAesKeyABPlain)
+            
+            // decryption of the IV used to decrypt the file
+            const fileIvPlain = await this.rsaDecrypt(fileIvAB, rsaPrivateKeyCryptoKey)
 
 
+            /*** decryption of the file ***/
+            const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)
 
+            console.log(filePlainAB)
 
 
         },
@@ -94,7 +124,7 @@ export default {
 
         // 2. the actuall AES key
         aesKey: async function (keyMaterial, user_salt) {
-            let symKey = await window.crypto.subtle.deriveKey( // a promise then an ArrayBuffer when it is fulfiled
+            let symKey = await window.crypto.subtle.deriveKey( // returns a CryptoKey when the promise is fulfilled
                 {
                     "name": "PBKDF2",
                     salt: user_salt,
@@ -125,7 +155,7 @@ export default {
 
         /***** (**) decryption of the AES sym key (or the IV) to decrypt the file - WE NEED : rsa private key (or IV) *****/
         // import of the RSA private key of the user back to CryptoKey type
-        importRsaPrivateKey: async function (keyData) {  // typeof(keyData) = ArrayBuffer
+        importRsaPrivateKey: async function (keyData){  // typeof(keyData) = ArrayBuffer
             let privCryptoKey = await window.crypto.subtle.importKey(
                 "pkcs8",
                 keyData,
@@ -139,7 +169,7 @@ export default {
             return privCryptoKey
         },
         
-        // actual decryption 
+        // the actual RSA decryption 
         rsaDecrypt: async function (encrAesKeyOrIv, rsaPrivKey){
             let plaintext = await window.crypto.subtle.decrypt(
                 {
@@ -152,6 +182,19 @@ export default {
         },
 
         /***** decryption of the date file with AES - WE NEED : the AES sym key and the iv decrypted with (**) and the actual data file *****/
+        // import the AES key from ArrayBuffer to CryptoKey
+        importAesKey: async function (keyData){
+            let privCryptoKey = await window.crypto.subtle.importKey(
+                "raw",
+                keyData,  // the ArrayBuffer to convert back to CryptoKey
+                "AES-GCM",
+                true,
+                ["encrypt", "decrypt"]
+            );
+            return privCryptoKey
+        },
+
+        // the actual AES decryption
         aesDecryptFile: async function (initVector, aesKey, encFileData){
             let plaintext = window.crypto.subtle.decrypt(
                 {

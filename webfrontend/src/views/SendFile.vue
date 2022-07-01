@@ -84,9 +84,12 @@ export default {
             const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
             const senderPubKeyCryptoKey = await this.importPubKey(senderPublicKeyAB)
 
+            // convert the AES sym key (used to encrypt file) from CryptoKey to ArrayBuffer (export)
+            const symKeyAB = await window.crypto.subtle.exportKey("raw", symKey)  // export to an ArrayBuffer type
+
             // encrypt the aes sym key with the sender and receiver public key
-            const receiverEncSymKey = await this.rsaEncrypt(symKey, receiverPubKeyCryptoKey)  // returns an arraybuffer
-            const senderEncSymKey = await this.rsaEncrypt(symKey, senderPubKeyCryptoKey)
+            const receiverEncSymKey = await this.rsaEncrypt(symKeyAB, receiverPubKeyCryptoKey)  // returns an arraybuffer
+            const senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
 
             // convert the array buffers to string 
             const receiverEncSymKeyStr = this.arrayBufferToStr(receiverEncSymKey)  // to be sent to the server
