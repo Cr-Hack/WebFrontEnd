@@ -13,7 +13,7 @@
                     </label>
                 </div>
                 <div class="user-box">
-                    <input type="text" id="dest" required="required" placeholder="Destinataire">
+                    <input v-model="receiverEmail" type="text" id="dest" required="required" placeholder="Destinataire">
                 </div>
 
                 <div class="btn">
@@ -37,7 +37,8 @@ export default {
     },
     data() {
         return {
-            fileToSend: ''
+            fileToSend: '',
+            receiverEmail: ''
         }
     }, 
     methods:{
@@ -51,7 +52,10 @@ export default {
 
         handleFile: async function () {
             //alert("j'ai cliqué sur le bouton confirmer")
-            var selectedFile = document.getElementById("fileInput").files[0];  // is a complex object (blob) ? 
+            var selectedFile = document.getElementById("fileInput").files[0]  // is a complex object (blob) ? 
+            console.log(selectedFile.type)
+            console.log(selectedFile.size)
+            console.log(selectedFile.name)
 
             console.log(selectedFile)
             console.log(typeof(selectedFile))
@@ -64,17 +68,19 @@ export default {
             console.log(arrayBuf)
 
             // AES key and IV
-            const symKey = this.aesKeyGeneration() // return an CryptoKey type
+            const symKey = await this.aesKeyGeneration() // return an CryptoKey type
             const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
 
             // file encryption 
-            var encryptedFile = this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
+            var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
 
 
             /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
             // fetch the receiver's public RSA key (type string)
-            const receiverPublicKeyStr = await axios.post()
-            const senderPublicKeyStr = await axios.post()
+            const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
+            const resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
+            const receiverPublicKeyStr = resultsPublicKey.data.publickey
+            const senderPublicKeyStr = this.$store.getters.user.publicKey
 
             // convert the string to ArrayBuffer
             const receiverPublicKeyAB = this.strToArrayBuf(receiverPublicKeyStr)  
@@ -91,27 +97,36 @@ export default {
             const receiverEncSymKey = await this.rsaEncrypt(symKeyAB, receiverPubKeyCryptoKey)  // returns an arraybuffer
             const senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
 
-            // convert the array buffers to string 
-            const receiverEncSymKeyStr = this.arrayBufferToStr(receiverEncSymKey)  // to be sent to the server
-            const senderEncSymKeyStr = this.arrayBufferToStr(senderEncSymKey)
 
             /***** init vector encryption for sender and receiver *****/
             // convert uint8array to arraybuffer
             const ivArrayBuf = this.uint8ArrayToArrayBuffer(initVector)
 
             // encrypt the IVs with RSA public keys
-            const receiverEncIv = this.rsaEncrypt(ivArrayBuf, receiverPubKeyCryptoKey)
-            const senderEncIv = this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
+            const receiverEncIv = await this.rsaEncrypt(ivArrayBuf, receiverPubKeyCryptoKey)
+            const senderEncIv = await this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
+
+            console.log("longueur de la clé symétrique chiffrée du fichier pour récepteur et envoyeur")
+            console.log(this.arrayBufferToStr(receiverEncSymKey).length)
+            console.log(this.arrayBufferToStr(senderEncSymKey).length)
+
+            console.log("longueur du vecteur d'init")
+            console.log(this.arrayBufferToStr(receiverEncIv).length)
+            console.log(this.arrayBufferToStr(senderEncIv).length)
 
             const toServer = {
-                file: encryptedFile,
-                receiverEncSymKey: receiverEncSymKeyStr,
-                senderEncSymKey: senderEncSymKeyStr,
-                receiverEncInitVector: receiverEncIv,
-                senderEncInitVector: senderEncIv
+                data: this.arrayBufferToStr(encryptedFile),
+                receiverID: receiverID.data.userId,
+                name: selectedFile.name,
+                type: selectedFile.type,
+                size: selectedFile.size,
+                receiverkey: this.arrayBufferToStr(receiverEncSymKey),
+                senderkey: this.arrayBufferToStr(senderEncSymKey),
+                receiverIV: this.arrayBufferToStr(receiverEncIv),
+                senderIV: this.arrayBufferToStr(senderEncIv)
             }
 
-            axios.post('', toServer)
+            axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token } })
                 .then(function (response) {
                     console.log(response);
                     alert("votre fichier a bien été envoyé")
@@ -167,7 +182,6 @@ export default {
             let cryptoKey = await window.crypto.subtle.importKey(
                 "spki", 
                 keyData,
-                "RSA-OAEP",
                 {
                     name: "RSA-OAEP",
                     hash: "SHA-256"  // WHY this ??? TBD

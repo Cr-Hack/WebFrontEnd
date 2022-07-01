@@ -59,10 +59,10 @@ export default {
 
             const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID }, { headers: { token: this.$store.getters.token } } )
             const fileToDecryptStr = dataFromServer.data  // string type
-            const fileAesKeyStr = dataFromServer.publickey // string type
+            const fileAesKeyStr = dataFromServer.publickey  // string type
             const fileIvStr = dataFromServer.iv // string type
-            const fileType = dataFromServer.type
-            const fileName = dataFromServer.name
+            const fileType = dataFromServer.type  // string type 
+            const fileName = dataFromServer.name  // string type
 
             // convert everything from string to ArrayBuffer
             const userToDecRsaPrivSaltAB = this.strToArrayBuf(userToDecRsaPrivSaltStr)
@@ -93,7 +93,7 @@ export default {
             /*** decryption of the file ***/
             const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
             
-            /*** display file ***/
+            /*** download file to computer ***/
             // convert the ArrayBuffer file back to a blob
             const blob = new Blob(filePlainAB, { type: fileType })  // we need to set the 'type' option of the blob ?
             const downloadUrl = URL.createObjectURL(blob)
