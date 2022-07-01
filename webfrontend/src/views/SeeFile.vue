@@ -14,18 +14,11 @@
                 </thead>
                 <tbody>
                     <tr v-for="(info, index) of infos" :key="index">
-<<<<<<< HEAD
                         <td>{{ info.sender }}</td>
                         <td>{{ info.other == info.sender ? this.$store.getters.user.email : info.other }}</td>
                         <td>{{ info.name }}</td>
                         <td>{{ info.datedeposite }}</td>
-=======
-                        <td>{{ info.de }}</td>
-                        <td>{{ info.a }}</td>
-                        <td>{{ info.fichier }}</td>
-                        <td>{{ info.dateheure }}</td>
                         <td><button class="btn" @click.prevent="downloadFile(info.fileID)"> Télécharger </button></td>
->>>>>>> 6b2d6aa6c46ac1d93410a37bfbc1b03423bcd461
                     </tr>
                 </tbody>
             </table>
@@ -98,11 +91,6 @@ export default {
 
 
             /*** decryption of the file ***/
-<<<<<<< HEAD
-            const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)
-
-            console.log(filePlainAB)
-=======
             const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
             
             /*** display file ***/
@@ -115,8 +103,6 @@ export default {
             document.body.appendChild(link)
             link.click()
             URL.revokeObjectURL(downloadUrl)
-
->>>>>>> 6b2d6aa6c46ac1d93410a37bfbc1b03423bcd461
         },
         
 
