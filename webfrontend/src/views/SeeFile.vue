@@ -52,11 +52,15 @@ export default {
 
         // function to download file : fetch the data, decrypt it, and convert it back to a file (blob)
         downloadFile: async function (fileID) {
-            alert("j'ai cliqué sur le bouton")
+            console.log("j'ai cliqué sur le bouton télécharger")
             const userPassword = this.$store.getters.user.pwd
             const userToDecRsaPrivSaltStr = this.$store.getters.user.salt  // string type
             const userToDecRsaPrivIvStr = this.$store.getters.user.iv  // string type
             const userRsaPrivateKeyStr = this.$store.getters.user.privateKey   // string type
+
+            console.log("the user passworld fetched from the token")
+            console.log(userPassword)
+
 
             const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID }, { headers: { token: this.$store.getters.token } } )
             const fileToDecryptStr = dataFromServer.data  // string type
@@ -66,24 +70,32 @@ export default {
             const fileName = dataFromServer.data.name  // string type
 
             // convert everything from string to ArrayBuffer
-            const userToDecRsaPrivSaltAB = this.strToArrayBuffer(userToDecRsaPrivSaltStr)
-            const userToDecRsaPrivIvAB = this.strToArrayBuffer(userToDecRsaPrivIvStr)
+            const userToDecRsaPrivSaltAB = this.strToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
+            const userToDecRsaPrivIvAB = this.strToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
             const userRsaPrivateKeyAB = this.strToArrayBuffer(userRsaPrivateKeyStr)
             const dataToDecryptAB = this.strToArrayBuffer(fileToDecryptStr)
             const fileAesKeyAB = this.strToArrayBuffer(fileAesKeyStr)
             const fileIvAB = this.strToArrayBuffer(fileIvStr)
 
+            // convert salt and IV back to uint8array
+            const userToDecRsaPrivSaltUint8Array = new Uint8Array(userToDecRsaPrivSaltAB) 
+            const userToDecRsaPrivIvUint8Array = new Uint8Array(userToDecRsaPrivIvAB)
+
             console.log("1")
             // reconstruction of the AES sym key with the userpassword the iv and the salt
             const keyMaterial = await this.aesKeyMaterial(userPassword);
-            const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltAB);
+            const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltUint8Array);
+
+            // DEBUG 
+            console.log("the AES decryption key converted to str")
+            const debugkeyAB = await window.crypto.subtle.exportKey("raw", aesKeyToDecryptRsaCryptoKey)
+            const debugkeystr = this.arrayBufferToStr(debugkeyAB)
+            console.log(debugkeystr)
+
 
             console.log("2")
-            console.log(userToDecRsaPrivIvAB)
-            console.log(aesKeyToDecryptRsaCryptoKey)
-            console.log(userRsaPrivateKeyAB)
             // decryption of the RSA private key 
-            const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvAB, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
+            const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvUint8Array, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
 
             console.log("3")
             // import the RSA private key to CryptoKey type 
@@ -94,15 +106,15 @@ export default {
             const fileAesKeyABPlain = await this.rsaDecrypt(fileAesKeyAB, rsaPrivateKeyCryptoKey)
             const fileAesKeyCryptoKey = await this.importAesKey(fileAesKeyABPlain)
             
-            console.log("4")
-            // decryption of the IV used to decrypt the file
-            const fileIvPlain = await this.rsaDecrypt(fileIvAB, rsaPrivateKeyCryptoKey)
-
             console.log("5")
+            // decryption of the IV used to decrypt the file
+            const fileIvPlain = await this.rsaDecrypt(fileIvAB, rsaPrivateKeyCryptoKey)  // returns an ArrayBuffer
+
+            console.log("6")
             /*** decryption of the file ***/
             const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
             
-            console.log("6")
+            console.log("7")
             /*** download file to computer ***/
             // convert the ArrayBuffer file back to a blob
             const blob = new Blob(filePlainAB, { type: fileType })  // we need to set the 'type' option of the blob ?
@@ -114,9 +126,14 @@ export default {
             link.click()
             URL.revokeObjectURL(url)
 
+            console.log("8")
+            console.log("the file has been downloaded to the computer!")
 
         },
 
+        arrayBufferToStr: function (arrayBuf) {
+            return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
+        },
 
         /***** decryption of RSA private key with AES - WE NEED : userpassword, iv, salt *****/
         

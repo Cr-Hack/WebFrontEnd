@@ -55,6 +55,7 @@ export default {
                     // modify the token 
                     this.$store.dispatch("setToken", result.data.token);
                     this.$store.dispatch("addUser", {
+                        pwd: this.pwd,
                         email: this.email,
                         publicKey: result.data.publicKey,
                         privateKey: result.data.privateKey,
@@ -101,7 +102,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 
     .container3{
         padding : 2% ;
