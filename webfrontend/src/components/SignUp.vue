@@ -106,12 +106,15 @@ export default {
             console.log(rsaPublicStr);
             console.log("longeur public key " + rsaPublicStr.length)
 
+            // hash of password 
+            const hashpwd = await this.hashencryption(this.pwd) ;  
+
             /***** elements to send the server *****/
             var toServer = {
                 first_name: this.fname,
                 last_name: this.lname,
                 email: this.email,
-                hashpassword: await this.hashencryption(this.pwd), // mdp à hasher
+                hashpassword: hashpwd, 
                 privatekey: rsaEncPrivKeyStr,
                 publickey: rsaPublicStr,
                 iv: this.arrayBufferToStr(init_vector), 
@@ -238,6 +241,7 @@ export default {
             const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
             const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
             console.log(hashHex_1);
+            return hashHex_1 ;
 
             /*const msgUint8_2 = new TextEncoder().encode(message2);                           
             const hashBuffer_2 = await crypto.subtle.digest('SHA-256', msgUint8_2);           
