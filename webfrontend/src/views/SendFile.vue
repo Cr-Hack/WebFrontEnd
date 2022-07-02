@@ -129,6 +129,13 @@ export default {
                 senderIV: this.arrayBufferToStr(senderEncIv)
             }
 
+            console.log("the encrypted file in string")
+            console.log(this.arrayBufferToStr(encryptedFile))
+            console.log("the encrypted receiver IV for file for file decryption in string")
+            console.log(this.arrayBufferToStr(receiverEncIv))
+            console.log("the encrypted receiver aes key for file decryption in string")
+            console.log(this.arrayBufferToStr(receiverEncSymKey))
+
             
             axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token } })
                 .then(function (response) {

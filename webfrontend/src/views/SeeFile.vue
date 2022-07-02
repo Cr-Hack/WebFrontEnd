@@ -62,12 +62,23 @@ export default {
             console.log(userPassword)
 
 
+            console.log("file ID of the file to be downloaded")
+            console.log(fileID)
+
             const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID }, { headers: { token: this.$store.getters.token } } )
-            const fileToDecryptStr = dataFromServer.data  // string type
+            const fileToDecryptStr = dataFromServer.data.data  // string type
+            
             const fileAesKeyStr = dataFromServer.data.publickey  // string type
             const fileIvStr = dataFromServer.data.iv // string type
             const fileType = dataFromServer.data.type  // string type 
             const fileName = dataFromServer.data.name  // string type
+
+            console.log("the string of the file to be decrypted")
+            console.log(fileToDecryptStr)
+            console.log("encrypted iv to decrypt the file for the user")
+            console.log(fileIvStr)
+            console.log("encrypted file aes key to decrypt the file for the user")
+            console.log(fileAesKeyStr)
 
             // convert everything from string to ArrayBuffer
             const userToDecRsaPrivSaltAB = this.strToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
@@ -109,11 +120,16 @@ export default {
             console.log("5")
             // decryption of the IV used to decrypt the file
             const fileIvPlain = await this.rsaDecrypt(fileIvAB, rsaPrivateKeyCryptoKey)  // returns an ArrayBuffer
+            // IV back to uint8array
+            const fileIvPlainUint8Array = new Uint8Array(fileIvPlain)
+
 
             console.log("6")
             /*** decryption of the file ***/
-            const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
+            const filePlainAB = await this.aesDecryptFile(fileIvPlainUint8Array, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
             
+
+
             console.log("7")
             /*** download file to computer ***/
             // convert the ArrayBuffer file back to a blob
