@@ -116,19 +116,21 @@ export default {
 
         // RSA key generation
         rsaKeyPair: async function () {
-            var keyPair = await window.crypto.subtle.generateKey(
-                {
-                    name: "RSA-OAEP",
-                    // Consider using a 4096-bit key for systems that require long-term security
-                    modulusLength: 2048,
-                    publicExponent: new Uint8Array([1, 0, 1]),  // WHY those arguments?? to be determined 
-                    hash: "SHA-256",
-                },
-                true,  // meaning that the key is extractable (it can be exported)
-                ["encrypt", "decrypt"] // key usages
-            )  // the return type is a promise that is a CryptoKeyPair
-            
-            return keyPair
+            try {
+                return await window.crypto.subtle.generateKey(
+                    {
+                        name: "RSA-OAEP",
+                        // Consider using a 4096-bit key for systems that require long-term security
+                        modulusLength: 2048,
+                        publicExponent: new Uint8Array([1, 0, 1]),  // WHY those arguments?? to be determined 
+                        hash: "SHA-256",
+                    },
+                    true,  // meaning that the key is extractable (it can be exported)
+                    ["encrypt", "decrypt"] // key usages
+                )  // the return type is a promise that is a CryptoKeyPair
+            } catch (err) {
+                console.log("RSA key generation failed ", err)
+            }
 
         },
 
@@ -152,32 +154,38 @@ export default {
 
         // the AES "key material"
         aesKeyMaterial: async function (userPassword) {
-            let pwdVerif = userPassword;
-            let enc = new TextEncoder();
-            return await window.crypto.subtle.importKey(  // WTF is that ???
-                "raw",
-                enc.encode(pwdVerif),
-                "PBKDF2",
-                false,
-                ["deriveKey"]
-            );
+            try {
+                let enc = new TextEncoder();
+                return await window.crypto.subtle.importKey(  
+                    "raw",
+                    enc.encode(userPassword),
+                    "PBKDF2",
+                    false,
+                    ["deriveKey"]
+                );
+            } catch (err) {
+                console.log("User password processing failed ", err)
+            }
         },
 
         // the actuall AES key
         aesKey: async function (keyMaterial, user_salt) {
-            let symKey = await window.crypto.subtle.deriveKey( // a promise then an ArrayBuffer when it is fulfiled
-                {
-                    "name": "PBKDF2",
-                    salt: user_salt,
-                    "iterations": 100000,
-                    "hash": "SHA-256"
-                },
-                keyMaterial,
-                { "name": "AES-GCM", "length": 256 }, // so the key length will be 256
-                true,
-                ["encrypt", "decrypt"]
-            );
-            return symKey;
+            try {
+                return await window.crypto.subtle.deriveKey( // returns a CryptoKey when the promise is fulfilled
+                    {
+                        "name": "PBKDF2",
+                        salt: user_salt,
+                        "iterations": 100000,
+                        "hash": "SHA-256"
+                    },
+                    keyMaterial,
+                    { "name": "AES-GCM", "length": 256 }, // so the key length will be 256
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+            } catch (err) {
+                console.log("AES key reconstruction failed ", err)
+            }
         },
 
 
@@ -187,17 +195,19 @@ export default {
         // encryption function 
         encryptRsaKey: async function(rsaPrivateKeyPlain, initVector, encKey) {
             // encryption of the plaintext here
-            let ciphertext = await window.crypto.subtle.encrypt(
-                {
-                    name: "AES-GCM",
-                    iv: initVector,
-                    tagLength: 128 // cf documentation to see the allowed lengths
-                },
-                encKey,
-                rsaPrivateKeyPlain // data to cipher
-            ); // return an ArrayBuffer
-            
-            return ciphertext;
+            try {
+                return await window.crypto.subtle.encrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: initVector,
+                        tagLength: 128 // cf documentation to see the allowed lengths
+                    },
+                    encKey,
+                    rsaPrivateKeyPlain // data to cipher
+                ); // return an ArrayBuffer
+            } catch (err) {
+                console.log("RSA private key encryption failed ", err)
+            }
         }, 
 
         hashencryption : async function (message1){

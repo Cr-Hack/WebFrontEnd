@@ -61,7 +61,6 @@ export default {
             console.log("the user passworld fetched from the token")
             console.log(userPassword)
 
-
             console.log("file ID of the file to be downloaded")
             console.log(fileID)
 
@@ -123,24 +122,21 @@ export default {
             // IV back to uint8array
             const fileIvPlainUint8Array = new Uint8Array(fileIvPlain)
 
-
             console.log("6")
             /*** decryption of the file ***/
             const filePlainAB = await this.aesDecryptFile(fileIvPlainUint8Array, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
             
-
-
             console.log("7")
             /*** download file to computer ***/
             // convert the ArrayBuffer file back to a blob
-            const blob = new Blob(filePlainAB, { type: fileType })  // we need to set the 'type' option of the blob ?
-            const url = URL.createObjectURL(blob)
+            const blob = new Blob([filePlainAB], { type: fileType })  // we need to set the 'type' option of the blob ?
+            const url = window.URL.createObjectURL(blob)
             const link = document.createElement('a')
-            link.href = link
+            link.href = url
             link.download = fileName
             document.body.appendChild(link)
             link.click()
-            URL.revokeObjectURL(url)
+            window.URL.revokeObjectURL(url)
 
             console.log("8")
             console.log("the file has been downloaded to the computer!")
@@ -166,102 +162,124 @@ export default {
         ///// reconstruction of the AES sym key with the userpassword the iv and the salt
         // 1. the AES "key material"
         aesKeyMaterial: async function (userPassword) {
-            let pwdVerif = userPassword;
-            let enc = new TextEncoder();
-            return await window.crypto.subtle.importKey(  // WTF is that ???
-                "raw",
-                enc.encode(pwdVerif),
-                "PBKDF2",
-                false,
-                ["deriveBits", "deriveKey"]
-            );
+            try {
+                let enc = new TextEncoder();
+                return await window.crypto.subtle.importKey(  
+                    "raw",
+                    enc.encode(userPassword),
+                    "PBKDF2",
+                    false,
+                    ["deriveKey"]
+                );
+            } catch (err) {
+                console.log("User password processing failed ", err)
+            }
         },
 
         // 2. the actuall AES key
         aesKey: async function (keyMaterial, user_salt) {
-            let symKey = await window.crypto.subtle.deriveKey( // returns a CryptoKey when the promise is fulfilled
-                {
-                    "name": "PBKDF2",
-                    salt: user_salt,
-                    "iterations": 100000,
-                    "hash": "SHA-256"
-                },
-                keyMaterial,
-                { "name": "AES-GCM", "length": 256 }, // so the key length will be 256
-                true,
-                ["encrypt", "decrypt"]
-            );
-            return symKey;
+            try {
+                return await window.crypto.subtle.deriveKey( // returns a CryptoKey when the promise is fulfilled
+                    {
+                        "name": "PBKDF2",
+                        salt: user_salt,
+                        "iterations": 100000,
+                        "hash": "SHA-256"
+                    },
+                    keyMaterial,
+                    { "name": "AES-GCM", "length": 256 }, // so the key length will be 256
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+            } catch (err) {
+                console.log("AES key reconstruction failed ", err)
+            }
         },
 
         
         // actual decryption algorithm
         aesDecryptRsaPrivateKey: async function (initVector, aesKey, rsaPrivateEncKey){
-            console.log("avant de rentrer dans le déchiffrement")
-            let plaintext = await window.crypto.subtle.decrypt(
-                {
-                    name: "AES-GCM",
-                    iv: initVector
-                },
-                aesKey,
-                rsaPrivateEncKey
-            );
-            console.log("avant de retourner la clé rsa déchiffrée...")
-            return plaintext
+            try {
+                return await window.crypto.subtle.decrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: initVector
+                    },
+                    aesKey,
+                    rsaPrivateEncKey
+                );
+            } catch (err) {
+                console.log("decryption failed", err);
+            }
+            
+            
         }, 
 
         /***** (**) decryption of the AES sym key (or the IV) to decrypt the file - WE NEED : rsa private key (or IV) *****/
         // import of the RSA private key of the user back to CryptoKey type
         importRsaPrivateKey: async function (keyData){  // typeof(keyData) = ArrayBuffer
-            let privCryptoKey = await window.crypto.subtle.importKey(
-                "pkcs8",
-                keyData,
-                {
-                    name: "RSA-OAEP",
-                    hash: "SHA-256",
-                },
-                true,
-                ["decrypt"]
-            );
-            return privCryptoKey
+            try {
+                return await window.crypto.subtle.importKey(
+                    "pkcs8",
+                    keyData,
+                    {
+                        name: "RSA-OAEP",
+                        hash: "SHA-256",
+                    },
+                    true,
+                    ["decrypt"]
+                );
+
+            } catch (err) {
+                console.log("RSA key import failed ", err)
+            }
         },
         
         // the actual RSA decryption 
         rsaDecrypt: async function (encrAesKeyOrIv, rsaPrivKey){
-            let plaintext = await window.crypto.subtle.decrypt(
-                {
-                    name: "RSA-OAEP"
-                },
-                rsaPrivKey,
-                encrAesKeyOrIv
-            );
-            return plaintext
+            try {
+                return await window.crypto.subtle.decrypt(
+                    {
+                        name: "RSA-OAEP"
+                    },
+                    rsaPrivKey,
+                    encrAesKeyOrIv
+                );
+            } catch (err) {
+                console.log("RSA key decryption failed ", err)
+            }
         },
 
         /***** decryption of the date file with AES - WE NEED : the AES sym key and the iv decrypted with (**) and the actual data file *****/
         // import the AES key from ArrayBuffer to CryptoKey
         importAesKey: async function (keyData){
-            let privCryptoKey = await window.crypto.subtle.importKey(
-                "raw",
-                keyData,  // the ArrayBuffer to convert back to CryptoKey
-                "AES-GCM",
-                true,
-                ["encrypt", "decrypt"]
-            );
-            return privCryptoKey
+            try {
+                return await window.crypto.subtle.importKey(
+                    "raw",
+                    keyData,  // the ArrayBuffer to convert back to CryptoKey
+                    "AES-GCM",
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+            } catch (err) {
+                console.log("AES key import failed ", err)
+            }
         },
 
         // the actual AES decryption
         aesDecryptFile: async function (initVector, aesKey, encFileData){
-            let plaintext = window.crypto.subtle.decrypt(
-                {
-                    name: "AES-GCM",
-                    iv: initVector
-                },
-                aesKey,
-                encFileData  // data to decrypt 
-            );
-            return plaintext
+            try {
+                return await window.crypto.subtle.decrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: initVector
+                    },
+                    aesKey,
+                    encFileData  // data to decrypt 
+                );
+            } catch (err) {
+                console.log("File decryption failed, ask sender to resend file ", err)
+            }
         }
     }
 

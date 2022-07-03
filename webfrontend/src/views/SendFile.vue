@@ -74,10 +74,6 @@ export default {
             // file encryption 
             var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
 
-
-            console.log("LE TOKEN LIGNE 78")
-            console.log(this.$store.getters.token)
-
             /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
             // fetch the receiver's public RSA key (type string)
             const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
@@ -136,6 +132,20 @@ export default {
             console.log("the encrypted receiver aes key for file decryption in string")
             console.log(this.arrayBufferToStr(receiverEncSymKey))
 
+            // DOWNLOAD FILE TEST
+            const blob = new Blob([arrayBuf], { type: selectedFile.type })  // we need to set the 'type' option of the blob ?
+            // const blob = selectedFile
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = selectedFile.name
+            document.body.appendChild(link)
+            link.click()
+            window.URL.revokeObjectURL(url)
+
+            console.log("8")
+            console.log("the file has been downloaded to the computer!")
+
             
             axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token } })
                 .then(function (response) {
@@ -148,28 +158,34 @@ export default {
         },
 
         aesKeyGeneration: async function () {
-            let key = await window.crypto.subtle.generateKey(
-                {
-                    name: "AES-GCM",
-                    length: 256
-                },
-                true,
-                ["encrypt", "decrypt"]
-            );
-            return key
+            try {
+                return await window.crypto.subtle.generateKey(
+                    {
+                        name: "AES-GCM",
+                        length: 256
+                    },
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+            } catch (err) {
+                console.log("AES key generation to encrypt file failed ", err)
+            }
         }, 
 
         encryptFile: async function (filePlain, initVector, symKey) {  // filePlain is the file to encrypt, (type = arraybuffer)
-            let ciphertext = await window.crypto.subtle.encrypt(
-                {
-                    name: "AES-GCM",
-                    iv: initVector,
-                    tagLength: 128 // cf documentation to see the allowed lengths
-                },
-                symKey,
-                filePlain // data to cipher
-            ); // return an ArrayBuffer
-            return ciphertext;
+            try {
+                return await window.crypto.subtle.encrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: initVector,
+                        tagLength: 128 // cf documentation to see the allowed lengths
+                    },
+                    symKey,
+                    filePlain // data to cipher
+                ); // return an ArrayBuffer
+            } catch (err) {
+                console.log("File encryption failed ", err)
+            }
         }, 
 
         strToArrayBuf: function (str) {
@@ -190,28 +206,34 @@ export default {
         },
 
         importPubKey: async function (keyData) {  // the type of keyData is ArrayBuffer
-            let cryptoKey = await window.crypto.subtle.importKey(
-                "spki", 
-                keyData,
-                {
-                    name: "RSA-OAEP",
-                    hash: "SHA-256"  // WHY this ??? TBD
-                },
-                true,
-                ["encrypt"]
-            )
-            return cryptoKey
+            try {
+                return await window.crypto.subtle.importKey(
+                    "spki",
+                    keyData,
+                    {
+                        name: "RSA-OAEP",
+                        hash: "SHA-256"  // WHY this ??? TBD
+                    },
+                    true,
+                    ["encrypt"]
+                )
+            } catch (err) {
+                console.log("RSA public key import failed ", err)
+            }
         },
 
         rsaEncrypt:async function (aesKeyOrIvPlain, rsaPublicKey) {
-            let ciphertext = await window.crypto.subtle.encrypt(
-                {
-                    name: "RSA-OAEP"
-                },
-                rsaPublicKey,
-                aesKeyOrIvPlain  // data to encrypt
-            );
-            return ciphertext
+            try {
+                return await window.crypto.subtle.encrypt(
+                    {
+                        name: "RSA-OAEP"
+                    },
+                    rsaPublicKey,
+                    aesKeyOrIvPlain  // data to encrypt
+                );
+            } catch (err) {
+                console.log("AES key or IV encryotion failed ", err)
+            }
         }
     }        
 }
