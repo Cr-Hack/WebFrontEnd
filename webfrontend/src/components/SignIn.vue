@@ -47,6 +47,7 @@ export default {
             // check if the email and password are in the database 
             if (this.email != "" && this.pwd != ""){
                 alert ("Connexion réussie !")
+                this.$emit('connexionReussie', this.email);
                 this.$router.push({name : 'Main Page'})
             }
             else {

@@ -1,6 +1,6 @@
 <template>
 <nav>
-    <div class="container-rightSide">
+    <div class="container-rightSide" @connexionReussie="email = $event">
         <img src="../../assets/logo.png" alt="Cr'Hack">
         <i id="account" class="fa-solid fa-user"></i>
     </div>
@@ -10,7 +10,6 @@
         <router-link to="/sendfile">Envoyer un fichier</router-link>
         <router-link to="/"><i class="fa-solid fa-arrow-right-from-bracket"></i></router-link>
     </div>
-    
 </nav>
 <router-view/>
 
@@ -18,6 +17,8 @@
 
 <script>
 export default {
+    methods:{
+    }
 }
 </script>
 

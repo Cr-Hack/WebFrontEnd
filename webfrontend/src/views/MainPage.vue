@@ -8,6 +8,8 @@ import NavBar from './sidebar/NavBar.vue'
 
 export default {
     components : {NavBar}, 
+    methods:{
+    }
 }
 </script>
 

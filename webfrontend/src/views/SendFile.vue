@@ -12,11 +12,11 @@
                 <label for="fileInput">
                     <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3> 
                     <i class="fa-solid fa-file-circle-plus fa-2xl"></i>
-                    <input id="fileInput" type="file" required="required" @change="showPreview($event);">
+                    <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile">
                 </label>
             </div>
             <div class="file-info">
-                <span @change="selectedFile" id="file">Fichier : {{dropzoneFile.name}}</span>
+                <span id="file">Fichier : {{dropzoneFile.name}}</span>
             </div>
             <div class="user-box" id="container-dest">
                 <input type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
@@ -43,16 +43,18 @@ export default {
 
         const drop = (event) => {
             dropzoneFile.value = event.dataTransfer.files[0];
-            active.value = !active.value
+            active.value = !active.value;
         };
-
+        
         const selectedFile = () => {
-            dropzoneFile.value = document.querySelector('.dest').files[0]
+            dropzoneFile.value = document.querySelector('.dropzoneFile').files[0];
         }
 
-        return {active, toggleActive, dropzoneFile, drop, selectedFile};
 
+
+        return {active, toggleActive, dropzoneFile, drop, selectedFile};
     },
+
 
 }
 </script>
