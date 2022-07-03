@@ -1,7 +1,9 @@
 <template>
+<div class="footer">
     <footer>
         <h4 class="txt-footer">© 2022 Cr'Hack</h4>
     </footer>
+</div>
 </template>
 
 <script>
@@ -16,6 +18,7 @@ export default {
     footer {
         background-color: #f7b32b ; 
     }
+
 
     .txt-footer{
         height: auto;

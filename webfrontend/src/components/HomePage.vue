@@ -149,12 +149,13 @@ export default {
         padding: 2px 30px;
     }
 
-    #s1{
-        flex-basis: 42%;
+    #s1, #s2{
+        flex-basis: 41%;
     }
-
-    #s2{
-        flex-basis: 42%;
+    @media screen and (max-width: 700px){
+        #s1, #s2{
+            flex-basis: 100%;
+        }
     }
 
     #s3{
@@ -174,7 +175,7 @@ export default {
     }
 
     .container {
-        margin-top:-10px;
+        margin-top:-40px;
         display:flex ; 
         flex-direction: row;
         flex-wrap: wrap; 
