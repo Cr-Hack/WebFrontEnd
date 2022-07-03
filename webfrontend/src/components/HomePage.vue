@@ -31,38 +31,49 @@
 
             </div>
 
-            
+            <h1>La Team</h1>
             <div class="container">
                 <div class="student Myriam" >
+                <a href="https://www.linkedin.com/in/myriam-amor">
                     <img src="../assets/myriam1.jpg" alt="photo de myriam"/>
                     <h4>Myriam Amor</h4>
-
+                </a>
                 </div>
 
                 <div class="student Josephine">
+                <a href="https://www.linkedin.com/in/joséphine-de-lestrange-0501411a0">
                     <img src="../assets/josephine2.png" alt="photo de josephine"/>
                     <h4>Joséphine de Lestrange</h4>
+                </a>
                 </div>
 
                 <div class="student Antoine">
+                <a href="https://www.linkedin.com/in/antoine-gay-0773a71a0">
                         <img src="../assets/antoine.png" alt="photo d antoine"/>
                         <h4>Antoine Gay</h4>
+                </a>
                 </div>
                 
                 <div class="student Helene">
+                <a href="https://www.linkedin.com/in/huang-helene">
                     <img src="../assets/helene1.png" alt="photo d helene"/>
                     <h4>Helene Huang</h4>
+                </a>
                 </div>
                 
 
                 <div class="student Ari">
+                 <a href="https://www.linkedin.com/in/ariprakash-ranganadin-8069841a0">
                     <img src="../assets/ari1.jpg" alt="photo d ari"/>
                     <h4>Ariprakash Ranganadin</h4>
+                 </a>   
                 </div>
 
                 <div class="student Clément">
+                <a href="https://www.linkedin.com/in/clement-rostagni">
                         <img src="../assets/clement1.jpg" alt="photo de clement"/>
-                        <h4>Clément Rostagni</h4>
+                       <h4>Clément Rostagni</h4>
+                </a>
                 </div>
 
             
@@ -114,19 +125,33 @@ export default {
 
 <style scoped>
     p{
-        text-align: left;
+        text-align: justify;
     }
 
-    h2{
+    h2, h1{
         color : #2E86AB
     }
 
     .body-white {
+        margin: 0 auto;
+        margin-top: -10px;
         padding : 2%; 
     }
 
     .section {
-        margin : 3px 0px 3px 0px; 
+        margin : 10px 0px 3px 0px; 
+        background-color: rgb(224, 224, 224);
+        box-shadow: rgba(0, 0, 0, 0.19) 0px 10px 20px, rgba(0, 0, 0, 0.23) 0px 6px 6px;
+        border-radius: 10px;
+        padding: 2px 30px;
+        
+       
+    }
+    .txt-descr{
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        
     }
 
     .container {
@@ -134,16 +159,12 @@ export default {
         flex-direction: row;
         flex-wrap: wrap; 
         justify-content: space-evenly;
-        align-items: center ; 
     }
 
-    .student{
-        /* haut droite bas gauche */ 
-        margin : 2% 7% 2% 7% ; 
-    }
+
 
     img{
-        margin-top: 75px;
+        margin-top: 50px;
         width: 200px;
     }
 
