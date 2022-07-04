@@ -32,6 +32,8 @@
 <script>
 import NavBar from './sidebar/NavBar.vue'
 import {ref} from 'vue';
+const axios = require('axios')
+
 export default {
     components : {NavBar}, 
     setup() {
@@ -49,13 +51,211 @@ export default {
         const selectedFile = () => {
             dropzoneFile.value = document.querySelector('.dropzoneFile').files[0];
         }
-
-
-
         return {active, toggleActive, dropzoneFile, drop, selectedFile};
     },
 
+    },
+    data() {
+        return {
+            fileToSend: '',
+            receiverEmail: ''
+        }
+    }, 
+    methods:{
+        showPreview(event){
+            if(event.target.files.length > 0){
+                var src = URL.createObjectURL(event.target.files[0]);
+                var preview = document.getElementById("file-ip-1-preview");
+                preview.src = src;
+            }
+        },
 
+        handleFile: async function () {
+            //alert("j'ai cliqué sur le bouton confirmer")
+            var selectedFile = document.getElementById("fileInput").files[0]  // is a complex object (blob) ? 
+            console.log(selectedFile.type)
+            console.log(selectedFile.size)
+            console.log(selectedFile.name)
+
+            console.log(selectedFile)
+            console.log(typeof(selectedFile))
+            console.log(selectedFile.text())
+
+            var arrayBuf = await selectedFile.arrayBuffer()  // convert the file to an arraybuffer
+
+            console.log("type of arrayBuff")
+            console.log(typeof(arrayBuf))
+            console.log(arrayBuf)
+
+            // AES key and IV
+            const symKey = await this.aesKeyGeneration() // return an CryptoKey type
+            const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
+
+            // file encryption 
+            var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
+
+            /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
+            // fetch the receiver's public RSA key (type string)
+            const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
+            const resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
+            const receiverPublicKeyStr = resultsPublicKey.data.publickey
+            const senderPublicKeyStr = this.$store.getters.user.publicKey
+
+            // convert the string to ArrayBuffer
+            const receiverPublicKeyAB = this.strToArrayBuf(receiverPublicKeyStr)  
+            const senderPublicKeyAB = this.strToArrayBuf(senderPublicKeyStr) 
+
+            // convert the ArrayBuffer to CryptoKey (with the importKey function)
+            const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
+            const senderPubKeyCryptoKey = await this.importPubKey(senderPublicKeyAB)
+
+            // convert the AES sym key (used to encrypt file) from CryptoKey to ArrayBuffer (export)
+            const symKeyAB = await window.crypto.subtle.exportKey("raw", symKey)  // export to an ArrayBuffer type
+
+            // encrypt the aes sym key with the sender and receiver public key
+            const receiverEncSymKey = await this.rsaEncrypt(symKeyAB, receiverPubKeyCryptoKey)  // returns an arraybuffer
+            const senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
+
+
+            /***** init vector encryption for sender and receiver *****/
+            // convert uint8array to arraybuffer
+            const ivArrayBuf = this.uint8ArrayToArrayBuffer(initVector)
+
+            // encrypt the IVs with RSA public keys
+            const receiverEncIv = await this.rsaEncrypt(ivArrayBuf, receiverPubKeyCryptoKey)
+            const senderEncIv = await this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
+
+            console.log("longueur de la clé symétrique chiffrée du fichier pour récepteur et envoyeur")
+            console.log(this.arrayBufferToStr(receiverEncSymKey).length)
+            console.log(this.arrayBufferToStr(senderEncSymKey).length)
+
+            console.log("longueur du vecteur d'init")
+            console.log(this.arrayBufferToStr(receiverEncIv).length)
+            console.log(this.arrayBufferToStr(senderEncIv).length)
+
+            const toServer = {
+                data: this.arrayBufferToStr(encryptedFile),
+                receiverID: receiverID.data.userId,
+                name: selectedFile.name,
+                type: selectedFile.type,
+                size: selectedFile.size,
+                receiverkey: this.arrayBufferToStr(receiverEncSymKey),
+                senderkey: this.arrayBufferToStr(senderEncSymKey),
+                receiverIV: this.arrayBufferToStr(receiverEncIv),
+                senderIV: this.arrayBufferToStr(senderEncIv)
+            }
+
+            console.log("the encrypted file in string")
+            console.log(this.arrayBufferToStr(encryptedFile))
+            console.log("the encrypted receiver IV for file for file decryption in string")
+            console.log(this.arrayBufferToStr(receiverEncIv))
+            console.log("the encrypted receiver aes key for file decryption in string")
+            console.log(this.arrayBufferToStr(receiverEncSymKey))
+
+            // DOWNLOAD FILE TEST
+            const blob = new Blob([arrayBuf], { type: selectedFile.type })  // we need to set the 'type' option of the blob ?
+            // const blob = selectedFile
+            const url = window.URL.createObjectURL(blob)
+            const link = document.createElement('a')
+            link.href = url
+            link.download = selectedFile.name
+            document.body.appendChild(link)
+            link.click()
+            window.URL.revokeObjectURL(url)
+
+            console.log("8")
+            console.log("the file has been downloaded to the computer!")
+
+            
+            axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token } })
+                .then(function (response) {
+                    console.log(response);
+                    alert("votre fichier a bien été envoyé")
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        },
+
+        aesKeyGeneration: async function () {
+            try {
+                return await window.crypto.subtle.generateKey(
+                    {
+                        name: "AES-GCM",
+                        length: 256
+                    },
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+            } catch (err) {
+                console.log("AES key generation to encrypt file failed ", err)
+            }
+        }, 
+
+        encryptFile: async function (filePlain, initVector, symKey) {  // filePlain is the file to encrypt, (type = arraybuffer)
+            try {
+                return await window.crypto.subtle.encrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: initVector,
+                        tagLength: 128 // cf documentation to see the allowed lengths
+                    },
+                    symKey,
+                    filePlain // data to cipher
+                ); // return an ArrayBuffer
+            } catch (err) {
+                console.log("File encryption failed ", err)
+            }
+        }, 
+
+        strToArrayBuf: function (str) {
+            const buf = new ArrayBuffer(str.length);
+            const bufView = new Uint8Array(buf);
+            for (let i = 0, strLen = str.length; i < strLen; i++) {
+                bufView[i] = str.charCodeAt(i);
+            }
+            return buf;
+        },
+
+        arrayBufferToStr: function (arrayBuf) {
+            return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
+        },
+
+        uint8ArrayToArrayBuffer: function (unit8array) {
+            return unit8array.buffer.slice(unit8array.byteOffset, unit8array.byteLength + unit8array.byteOffset)
+        },
+
+        importPubKey: async function (keyData) {  // the type of keyData is ArrayBuffer
+            try {
+                return await window.crypto.subtle.importKey(
+                    "spki",
+                    keyData,
+                    {
+                        name: "RSA-OAEP",
+                        hash: "SHA-256"  // WHY this ??? TBD
+                    },
+                    true,
+                    ["encrypt"]
+                )
+            } catch (err) {
+                console.log("RSA public key import failed ", err)
+            }
+        },
+
+        rsaEncrypt:async function (aesKeyOrIvPlain, rsaPublicKey) {
+            try {
+                return await window.crypto.subtle.encrypt(
+                    {
+                        name: "RSA-OAEP"
+                    },
+                    rsaPublicKey,
+                    aesKeyOrIvPlain  // data to encrypt
+                );
+            } catch (err) {
+                console.log("AES key or IV encryotion failed ", err)
+            }
+        }
+    }        
 }
 </script>
 
