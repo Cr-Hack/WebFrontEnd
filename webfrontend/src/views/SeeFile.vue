@@ -125,9 +125,21 @@ export default {
             console.log("6")
             /*** decryption of the file ***/
             const filePlainAB = await this.aesDecryptFile(fileIvPlainUint8Array, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
-            
-            console.log("7")
+            // this.aesDecryptFile() returns 1 if there's an error 
+
+            console.log("7, maintenant on va procéder au téléchagement du fichier")
+
             /*** download file to computer ***/
+            if (fileAesKeyAB == 1) {
+                alert("File decryption failed, ask sender to resend file")
+                return 
+            }
+            
+            this.downloadBlob(filePlainAB, fileType, fileName) // téléchargement du fichier
+        },
+
+        // download ArrayBuffer to file 
+        downloadBlob: function (filePlainAB, fileType, fileName) {
             // convert the ArrayBuffer file back to a blob
             const blob = new Blob([filePlainAB], { type: fileType })  // we need to set the 'type' option of the blob ?
             const url = window.URL.createObjectURL(blob)
@@ -140,7 +152,6 @@ export default {
 
             console.log("8")
             console.log("the file has been downloaded to the computer!")
-
         },
 
         arrayBufferToStr: function (arrayBuf) {
@@ -196,7 +207,6 @@ export default {
             }
         },
 
-        
         // actual decryption algorithm
         aesDecryptRsaPrivateKey: async function (initVector, aesKey, rsaPrivateEncKey){
             try {
@@ -266,7 +276,7 @@ export default {
             }
         },
 
-        // the actual AES decryption
+        // the actual AES decryption of the file
         aesDecryptFile: async function (initVector, aesKey, encFileData){
             try {
                 return await window.crypto.subtle.decrypt(
@@ -279,6 +289,7 @@ export default {
                 );
             } catch (err) {
                 console.log("File decryption failed, ask sender to resend file ", err)
+                return 1
             }
         }
     }

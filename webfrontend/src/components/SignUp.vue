@@ -88,14 +88,14 @@ export default {
 
 
             // hash of password 
-            const hashpwd = await this.hashencryption(this.pwd) ;  
+            // const hashpwd = await this.hashencryption(this.pwd) ;  
 
             /***** elements to send the server *****/
             var toServer = {
                 first_name: this.fname,
                 last_name: this.lname,
                 email: this.email,
-                hashpassword: hashpwd, 
+                hashpassword: this.pwd, 
                 privatekey: rsaEncPrivKeyStr,
                 publickey: rsaPublicStr,
                 iv: this.arrayBufferToStr(init_vector), 
