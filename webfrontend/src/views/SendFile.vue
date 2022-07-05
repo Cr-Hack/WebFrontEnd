@@ -26,8 +26,20 @@
                     <button type="submit" id="confirm" class="btn_l">Confirmer</button>
                     <button type="submit" id="del" class="btn_l">Annuler</button>
                 </div>
+                <div v-if="progress" class="progress-wrapper">
+                    <div id="progress" class="progress" :style="progress_style"></div>
+                </div>
             </form>
         </div>
+        <ul v-for="(action, index) of actions" :key="index">
+            <li class="item">
+                <div :class="action.class">
+                    {{ action.message }}
+                </div>
+                <div class="timebar"></div>
+                <div class="timebar-filled"></div>
+            </li>
+        </ul>
     </div>
 </template>
 
@@ -59,7 +71,10 @@ export default {
     data() {
         return {
             fileToSend: '',
-            receiverEmail: ''
+            receiverEmail: '',
+            actions: [],
+            progress: false,
+            progress_style: "width: 0%"
         }
     }, 
     methods:{
@@ -72,6 +87,12 @@ export default {
         },
 
         handleFile: async function () {
+            if(this.progress){
+                alert("Une opération est déjà en cours.")
+                return
+            }
+            this.progress = true
+            this.setProgressBar(0)
             //alert("j'ai cliqué sur le bouton confirmer")
 
             // files is an array of files 
@@ -96,9 +117,12 @@ export default {
                 const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
 
                 console.log("Encrypting file ....")
+                this.setProgressBar(25)
 
                 // file encryption 
                 var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
+
+                this.setProgressBar(75)
 
                 console.log("Encryption done !")
 
@@ -165,18 +189,33 @@ export default {
                 console.log("the encrypted receiver aes key for file decryption in string")
                 console.log(this.arrayBufferToBase64(receiverEncSymKey))
 
+                try{
+                    let response = await axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
+                    console.log(response);
+                    let action = {
+                        message: "Le fichier " + selectedFile.name + " a bien été envoyé",
+                        class: "success"
+                    }
+                    this.actions.push(action)
+                    let view = this
+                    setTimeout(() => {view.actions.splice(view.actions.indexOf(action), 1)}, 8000)
+                }catch (error) {
+                    console.log(error)
+                    let action = {
+                        message: "Erreur lors de l'envoi du fichier " + selectedFile.name + ", veuillez recommencer !",
+                        class: "error"
+                    }
+                    this.actions.push(action)
+                    let view = this
+                    setTimeout(() => {view.actions.splice(view.actions.indexOf(action), 1)}, 20000)
+                }
 
-                axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
-                    .then(function (response) {
-                        console.log(response);
-                        alert("votre fichier a bien été envoyé")
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
+                this.setProgressBar(100)
             }
 
-            
+            //document.getElementById("fileInput").files.clear()
+            this.receiverEmail = ""
+            this.progress = false
         },
 
         aesKeyGeneration: async function () {
@@ -251,7 +290,7 @@ export default {
             }
         },
 
-        rsaEncrypt:async function (aesKeyOrIvPlain, rsaPublicKey) {
+        rsaEncrypt: async function (aesKeyOrIvPlain, rsaPublicKey) {
             try {
                 return await window.crypto.subtle.encrypt(
                     {
@@ -263,6 +302,10 @@ export default {
             } catch (err) {
                 console.log("AES key or IV encryotion failed ", err)
             }
+        },
+
+        setProgressBar: function (percentage) {
+            this.progress_style = "width: " + percentage + "%"
         }
     }        
 }
@@ -291,6 +334,7 @@ export default {
     margin: 100px 100px;
     box-shadow: 0 15px 25px #C1C1C1;
     background-color: rgb(248, 248, 248);
+    margin-bottom: 20px;
 }
 
 .user-box{
@@ -402,6 +446,70 @@ label{
     margin: 0px;
 }
 
+.item {
+    list-style: none;
+    width: auto;
+    box-shadow: 0 15px 25px #C1C1C1;
+    margin: 20px 100px 20px 60px;
+    text-align: left;
+    display: flex;
+    flex-flow: row wrap;
+}
 
+.success,.error {
+    padding: 15px;
+    padding-bottom: 11px;
+    flex-basis: 100%;
+}
+
+.success {
+    background-color: #9afa5899;
+}
+
+.error {
+    background-color: #ff9f9f;
+}
+
+.timebar,.timebar-filled{
+    height: 4px;
+}
+
+.success+.timebar{
+    background-color: #00d8049e;
+    animation: 8.5s durationBar;
+    flex-shrink: 1;
+}
+.success+.timebar+.timebar-filled {
+    background-color: #9afa5899;
+    flex-basis: 0;
+    flex-grow: 1;
+}
+
+.error+.timebar{
+    background-color: #ff7272;
+    animation: 20.5s durationBar;
+    flex-shrink: 1;
+}
+
+.error+.timebar+.timebar-filled {
+    background-color: #ff9f9f;
+    flex-basis: 0;
+    flex-grow: 1;
+}
+
+@-webkit-keyframes durationBar { from { flex-basis: 0%; } to { flex-basis:100%; }  }
+@keyframes durationBar { from { flex-basis: 0%; } to { flex-basis:100%; }  }
+
+.progress-wrapper {
+    width: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid black;
+}
+
+.progress {
+    background-color: #922D50;
+    height: 10px;
+}
 
 </style>

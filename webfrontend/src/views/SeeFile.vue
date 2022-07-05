@@ -15,20 +15,14 @@
                     </tr>
                 </thead>
                 <tbody>
-
                     <tr v-for="(info, index) of infos" :key="index">
                         <td>{{ info.sender }}</td>
                         <td>{{ info.other == info.sender ? this.$store.getters.user.email : info.other }}</td>
                         <td><i :class="formatType(info.type)"></i></td>
                         <td>{{ info.name }}</td>
-                        <td>{{info.size}} o</td>
-                        <td>{{ info.datedeposite }}</td>
-                        <td><button class="btn" @click="downloadFile(info.fileID)"> <i class="fa-solid fa-download" id="btn-logo"></i> </button></td>
-                    </tr>
-                </tbody>
                         <td>{{ formatSize(info.size) }}</td>
                         <td>{{ formatDateTime(info.datedeposite) }}</td>
-                        <td><button class="btn" @click="downloadFile(info.fileID)"> Télécharger le fichier </button></td>
+                        <td><button class="btn" @click="downloadFile(info.fileID)"> <i class="fa-solid fa-download" id="btn-logo"></i> </button></td>
                     </tr>
                 </tbody>
             </table>
