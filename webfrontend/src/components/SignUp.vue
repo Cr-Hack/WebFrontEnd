@@ -64,27 +64,29 @@ export default {
 
             // export the CryptoKeys above into ArrayBuffers
             let rsaPrivate = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);  // object of type ArrayBuffer
+            console.log("private kye here !!!!!!!!!!!!!!")
+            console.log(this.arrayBufferToBase64(rsaPrivate))
             let rsaPublic = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);  // object of type ArrayBuffer
 
             /***** RSA private key encryption *****/
             // construction of the AES sym key
             const user_salt = window.crypto.getRandomValues(new Uint8Array(16));  // salt generation - why arrayBuffer(16) ??? TBD 
             const init_vector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
-            const keyMaterial = await this.aesKeyMaterial(this.pwd_verif)
+            const keyMaterial = await this.aesKeyMaterial(this.pwd)
             const aesEncKey = await this.aesKey(keyMaterial, user_salt)
 
             ////////////// test zone 
             console.log("the AES encryption key converted to str")
             const aeskeyAB = await window.crypto.subtle.exportKey("raw", aesEncKey)
-            const aeskeystr = this.arrayBufferToStr(aeskeyAB)
+            const aeskeystr = this.arrayBufferToBase64(aeskeyAB)
             console.log(aeskeystr)
 
             // actual encryption
             const rsaEncryptedPrivateKey = await this.encryptRsaKey(rsaPrivate, init_vector, aesEncKey);  // encryption
 
             /***** RSA private and public keys from type ArrayBuffer to String *****/
-            const rsaEncPrivKeyStr = this.arrayBufferToStr(rsaEncryptedPrivateKey);
-            const rsaPublicStr = this.arrayBufferToStr(rsaPublic);
+            const rsaEncPrivKeyStr = this.arrayBufferToBase64(rsaEncryptedPrivateKey);
+            const rsaPublicStr = this.arrayBufferToBase64(rsaPublic);
 
 
             // hash of password 
@@ -95,11 +97,11 @@ export default {
                 first_name: this.fname,
                 last_name: this.lname,
                 email: this.email,
-                hashpassword: hashpwd, 
+                hashpassword: hashpwd,
                 privatekey: rsaEncPrivKeyStr,
                 publickey: rsaPublicStr,
-                iv: this.arrayBufferToStr(init_vector), 
-                salt: this.arrayBufferToStr(user_salt),
+                iv: this.arrayBufferToBase64(init_vector), 
+                salt: this.arrayBufferToBase64(user_salt),
             }
 
             try {
@@ -134,17 +136,24 @@ export default {
 
         },
 
-        arrayBufferToStr: function (arrayBuf) {
-            return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
+        base64ToArrayBuffer: function(base64) {
+            var binary_string = window.atob(base64);
+            var len = binary_string.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
+            }
+            return bytes.buffer;
         },
 
-        strToArrayBuffer: function (str) {
-            const buf = new ArrayBuffer(str.length);
-            const bufView = new Uint8Array(buf);
-            for (let i = 0, strLen = str.length; i < strLen; i++) {
-                bufView[i] = str.charCodeAt(i);
+        arrayBufferToBase64: function( buffer ) {
+            var binary = '';
+            var bytes = new Uint8Array( buffer );
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode( bytes[ i ] );
             }
-            return buf;
+            return window.btoa( binary );
         },
         
 
