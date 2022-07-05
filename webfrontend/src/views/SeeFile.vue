@@ -32,7 +32,6 @@ import NavBar from './sidebar/NavBar.vue'
 
 export default {
     components : {NavBar}, 
-
     data(){
         return{
         infos : this.created()
@@ -65,7 +64,9 @@ export default {
             console.log(fileID)
 
             const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID }, { headers: { token: this.$store.getters.token } } )
-            const fileToDecryptStr = dataFromServer.data.data  // string type
+            console.log(dataFromServer.data)
+            const dataFromServerFile = await axios.post("http://localhost:5000/file/download", { fileID: fileID, file: true }, { headers: { token: this.$store.getters.token }, responseType: "blob" } )
+            const dataToDecryptAB = await dataFromServerFile.data.arrayBuffer()
             
             const fileAesKeyStr = dataFromServer.data.publickey  // string type
             const fileIvStr = dataFromServer.data.iv // string type
@@ -73,7 +74,8 @@ export default {
             const fileName = dataFromServer.data.name  // string type
 
             console.log("the string of the file to be decrypted")
-            console.log(fileToDecryptStr)
+            console.log(dataToDecryptAB)
+            console.log(this.arrayBufferToStr(dataToDecryptAB))
             console.log("encrypted iv to decrypt the file for the user")
             console.log(fileIvStr)
             console.log("encrypted file aes key to decrypt the file for the user")
@@ -83,7 +85,6 @@ export default {
             const userToDecRsaPrivSaltAB = this.strToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
             const userToDecRsaPrivIvAB = this.strToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
             const userRsaPrivateKeyAB = this.strToArrayBuffer(userRsaPrivateKeyStr)
-            const dataToDecryptAB = this.strToArrayBuffer(fileToDecryptStr)
             const fileAesKeyAB = this.strToArrayBuffer(fileAesKeyStr)
             const fileIvAB = this.strToArrayBuffer(fileIvStr)
 
@@ -295,6 +296,7 @@ export default {
     }
 
 }
+
 </script>
 
 <style scoped>
@@ -314,6 +316,31 @@ th{
     top: 0px;
 }
 
+button{
+  
+  width: 100%;
+  max-width: 100px;
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  border: 1px solid var(--red);
+  text-align: left;
+  vertical-align: top;
+  padding: calc(.875rem - 3px) 63px calc(.875rem - 3px) 15px;
+  background-color: #00000000;
+  font-size: 14px;
+  letter-spacing: 0.16px;
+  min-height: 48px;
+  line-height: 1.29;
+  color: var(--red);
+  font-weight: 400;
+  transition: background 70ms cubic-bezier(0,0,.38,.9),box-shadow 70ms cubic-bezier(0,0,.38,.9),border-color 70ms cubic-bezier(0,0,.38,.9),outline 70ms cubic-bezier(0,0,.38,.9);
+}
+
+button:hover{
+    background: var(--red);
+    color: #fff;
+}
 .style-table{
     font-size: 12px;
     font-weight: normal;

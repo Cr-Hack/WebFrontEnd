@@ -135,7 +135,16 @@ export default {
         },
 
         arrayBufferToStr: function (arrayBuf) {
-            return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
+            var str = ""
+            var length = arrayBuf.byteLength
+            var remaining = arrayBuf.byteLength
+            while (remaining > 0) {
+                let remain = 500
+                if (remaining < 500) remain = remaining
+                str += String.fromCharCode.apply(null, new Uint8Array(arrayBuf.slice((length - remaining), (length - remaining) + remain)))
+                remaining -= remain
+            }
+            return str
         },
 
         strToArrayBuffer: function (str) {

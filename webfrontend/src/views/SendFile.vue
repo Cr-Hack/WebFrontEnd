@@ -1,39 +1,59 @@
 <template>
     <div>
-        <nav-bar />
+        <nav-bar/>
         <div class="send-box">
             <h2 id="title">Formulaire d'envoi chiffré</h2>
             <form class="formy" method="post" @submit.prevent="handleFile()">
-                <div class="user-box" id="input-file">
-                    <img id="file-ip-1-preview" />
+                <div @dragenter.prevent="toggleActive" 
+                @dragleave.prevent="toggleActive" @dragover.prevent
+                @drop.prevent="drop"
+                :class="{'active-dropzone' : active}"
+                class="user-box" id="input-file">
+                    <img id="file-ip-1-preview"/>
                     <label for="fileInput">
-                        <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3>
+                        <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3> 
                         <i class="fa-solid fa-file-circle-plus fa-2xl"></i>
-                        <input id="fileInput" type="file" required="required" @change="showPreview($event);">
+                        <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile">
                     </label>
                 </div>
-                <div class="user-box">
-                    <input v-model="receiverEmail" type="text" id="dest" required="required" placeholder="Destinataire">
+                <div class="file-info">
+                    <span id="file">Fichier : {{dropzoneFile.name}}</span>
                 </div>
-
+                <div class="user-box" id="container-dest">
+                    <input v-model="receiverEmail" type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
+                </div>
                 <div class="btn">
                     <button type="submit" id="confirm" class="btn_l">Confirmer</button>
-                    <button type="reset" id="del" class="btn_l">Annuler</button>
+                    <button type="submit" id="del" class="btn_l">Annuler</button>
                 </div>
             </form>
-
         </div>
     </div>
 </template>
 
 <script>
 import NavBar from './sidebar/NavBar.vue'
+import {ref} from 'vue';
 const axios = require('axios')
 
 export default {
     components : {NavBar}, 
     setup() {
+        const active = ref(false);
+        const toggleActive = () => {
+            active.value = !active.value;
+        };
+        let dropzoneFile = ref("");
+
+        const drop = (event) => {
+            dropzoneFile.value = event.dataTransfer.files[0];
+            active.value = !active.value;
+        };
         
+        const selectedFile = () => {
+            dropzoneFile.value = document.querySelector('.dropzoneFile').files[0];
+        }
+        return {active, toggleActive, dropzoneFile, drop, selectedFile};
     },
     data() {
         return {
@@ -66,13 +86,18 @@ export default {
             console.log("type of arrayBuff")
             console.log(typeof(arrayBuf))
             console.log(arrayBuf)
+            console.log(this.arrayBufferToStr(arrayBuf))
 
             // AES key and IV
             const symKey = await this.aesKeyGeneration() // return an CryptoKey type
             const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
 
+            console.log("Encrypting file ....")
+
             // file encryption 
             var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
+
+            console.log("Encryption done !")
 
             /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
             // fetch the receiver's public RSA key (type string)
@@ -106,15 +131,18 @@ export default {
             const senderEncIv = await this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
 
             console.log("longueur de la clé symétrique chiffrée du fichier pour récepteur et envoyeur")
-            console.log(this.arrayBufferToStr(receiverEncSymKey).length)
-            console.log(this.arrayBufferToStr(senderEncSymKey).length)
+            console.log(this.arrayBufferToStr(receiverEncSymKey))
+            console.log(this.arrayBufferToStr(senderEncSymKey))
 
             console.log("longueur du vecteur d'init")
-            console.log(this.arrayBufferToStr(receiverEncIv).length)
-            console.log(this.arrayBufferToStr(senderEncIv).length)
+            console.log(this.arrayBufferToStr(receiverEncIv))
+            console.log(this.arrayBufferToStr(senderEncIv))
+
+            //console.log("DATA SENDED !!! " + this.arrayBufferToStr(encryptedFile))
 
             const toServer = {
-                data: this.arrayBufferToStr(encryptedFile),
+                //data: this.arrayBufferToStringForFiles(encryptedFile),
+                data: new Blob([encryptedFile]),
                 receiverID: receiverID.data.userId,
                 name: selectedFile.name,
                 type: selectedFile.type,
@@ -126,12 +154,14 @@ export default {
             }
 
             console.log("the encrypted file in string")
+            console.log(encryptedFile)
             console.log(this.arrayBufferToStr(encryptedFile))
             console.log("the encrypted receiver IV for file for file decryption in string")
             console.log(this.arrayBufferToStr(receiverEncIv))
             console.log("the encrypted receiver aes key for file decryption in string")
             console.log(this.arrayBufferToStr(receiverEncSymKey))
 
+            /*
             // DOWNLOAD FILE TEST
             const blob = new Blob([arrayBuf], { type: selectedFile.type })  // we need to set the 'type' option of the blob ?
             // const blob = selectedFile
@@ -145,9 +175,9 @@ export default {
 
             console.log("8")
             console.log("the file has been downloaded to the computer!")
+            */
 
-            
-            axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token } })
+            axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
                 .then(function (response) {
                     console.log(response);
                     alert("votre fichier a bien été envoyé")
@@ -201,6 +231,20 @@ export default {
             return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
         },
 
+        arrayBufferToStringForFiles: function (arrayBuf){
+            console.log("convertion started")
+            var str = new String()
+            var length = arrayBuf.byteLength
+            var remaining = arrayBuf.byteLength
+            while (remaining > 0) {
+                let remain = 500
+                if (remaining < 500) remain = remaining
+                str += String.fromCharCode.apply(null, new Uint8Array(arrayBuf.slice((length - remaining), (length - remaining) + remain)))
+                remaining -= remain
+            }
+            return str
+        },
+
         uint8ArrayToArrayBuffer: function (unit8array) {
             return unit8array.buffer.slice(unit8array.byteOffset, unit8array.byteLength + unit8array.byteOffset)
         },
@@ -240,6 +284,15 @@ export default {
 </script>
 
 <style scoped>
+.file-info{
+    margin-right: 0;
+    padding: 10px;
+    text-align: left;
+}
+
+#file{
+    word-wrap: break-word;
+}
 
 #file-ip-1-preview{
     border-radius: 0;
@@ -263,14 +316,22 @@ export default {
     margin-right: auto;
 }
 
+.active-dropzone{
+    color: #fff;
+    border: none;
+    background-color: var(--red);
+    transition: .2s ease-in-out;
+}
+
 #input-file{
-    border: dotted grey;
+    border-radius: 10px;
+    border: dashed;
     width: auto;
     padding: 15px;
 }
 
 h3{
-    margin-top: 0;
+    margin-top: -10px;
 }
 
 .inputTag{
@@ -298,12 +359,20 @@ label{
     padding: 12px;
     border-radius: 3px;
     outline: none;
+
+    width: 100%;
+    max-width: 400px;
+    box-sizing: border-box;
 }
 
 #dest:focus::placeholder{
     color: transparent;
 }
 
+#container-dest{
+    width: 100%;
+    max-width: 600px;
+}
 
 .btn{
     display: flex;
@@ -330,6 +399,14 @@ label{
     transition: background 70ms cubic-bezier(0,0,.38,.9),box-shadow 70ms cubic-bezier(0,0,.38,.9),border-color 70ms cubic-bezier(0,0,.38,.9),outline 70ms cubic-bezier(0,0,.38,.9);
 }
 
+@media screen and (max-width: 600px){
+    .btn{
+        flex-direction: column;
+    }
+    .btn h3{
+        font-size: 10vw;
+    }
+}
 .btn_l:hover{
     background: var(--red);
     color: #fff;
