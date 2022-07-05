@@ -132,12 +132,9 @@ export default {
     }
 
     .container3 .input-group-btn  {
-
-
         display: block;
         width: 50%;
         height: 50px;
-        padding: 2% 2%;
         text-align: center;
         border: none;
         background: #2e86ab;

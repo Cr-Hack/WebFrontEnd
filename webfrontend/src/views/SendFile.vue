@@ -54,7 +54,6 @@ export default {
         return {active, toggleActive, dropzoneFile, drop, selectedFile};
     },
 
-    },
     data() {
         return {
             fileToSend: '',

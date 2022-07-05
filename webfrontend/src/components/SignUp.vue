@@ -20,7 +20,7 @@
                 required>
             <input class="input-group" v-model="pwd_verif" type="password" name="" id="pwd_verif"
                 placeholder="Confirmation du mot de passe" required>
-            <button class="input-group-btn" type="submit">C'est parti ! </button>
+            <button class="input-group-btn" type="submit">C'est parti !</button>
             <button class="input-group-btn" type="reset">Reset</button>
 
 
@@ -263,12 +263,10 @@ export default {
     }
 
     .container3 .input-group-btn  {
-
-
         display: block;
-        width: 50%;
+        width: 200px;
         height: 50px;
-        padding: 2% 2%;
+        padding: 0;
         text-align: center;
         border: none;
         background: #2e86ab;
