@@ -15,13 +15,15 @@
                 <input class="input-group" v-model="pwd" type="password" name="pwd" id="" placeholder="Mot de passe" required="required">
                 <button class="input-group-btn btn" type="submit">Se connecter</button>
             </form>
+            
     </div>
 </template>
 
 <script>
+
 import axios from 'axios'
 
-// :class="{'button--disabled': InvalidFields()}"
+
 export default {
     name : "SignIn", 
     setup(){
@@ -37,6 +39,7 @@ export default {
 
     }, 
     methods :{
+
         goToMainPage : async function (){
             // check if the email and password are in the database 
             if (this.email != "" && this.pwd != ""){
@@ -52,7 +55,7 @@ export default {
                     // send infos to the server 
                     let result = await axios.post("http://localhost:5000/auth/login", data)
                     //alert ("Connexion réussie !")
-                    // modify the token 
+                    //modify the token 
                     this.$store.dispatch("setToken", result.data.token);
                     this.$store.dispatch("addUser", {
                         email: this.email,
@@ -61,7 +64,7 @@ export default {
                         iv: result.data.iv,
                         salt: result.data.salt
                     });
-                    this.$router.push({ name: 'Main Page' })
+                    this.$router.push({ name: 'two_auth' })
                 }catch(error){
                     console.log(error)
                     if(error.response.data.error) alert(error.response.data.error)
@@ -80,9 +83,6 @@ export default {
         
         hashencryption : async function (message1){
             
-            //const message1 = this.pwd;
-            //const message2= this.pwd_verif;
-
             const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
             const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
             const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
@@ -90,11 +90,6 @@ export default {
             console.log(hashHex_1);
             return hashHex_1 ;
 
-            /*const msgUint8_2 = new TextEncoder().encode(message2);                           
-            const hashBuffer_2 = await crypto.subtle.digest('SHA-256', msgUint8_2);           
-            const hashArray_2 = Array.from(new Uint8Array(hashBuffer_2));                     
-            const hashHex_2 = hashArray_2.map(b => b.toString(16).padStart(2, '0')).join(''); 
-            console.log(hashHex_2);*/
         }, 
     }
 
