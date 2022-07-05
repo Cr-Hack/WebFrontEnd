@@ -8,7 +8,6 @@
             Connexion
         </h2>
 
-
             <form class="container3" action="" method="post" @submit.prevent="goToMainPage">
 
                 <input class="input-group" v-model="email" type="email" name="email" id="" placeholder="Email" required="required">
@@ -64,7 +63,8 @@ export default {
                         iv: result.data.iv,
                         salt: result.data.salt
                     });
-                    this.$router.push({ name: 'two_auth' })
+                    //this.$router.push({ name: 'two_auth' })
+                    this.$router.push({ name: 'Main Page' })
                 }catch(error){
                     console.log(error)
                     if(error.response.data.error) alert(error.response.data.error)
@@ -92,6 +92,7 @@ export default {
             return hashHex_1 ;
 
         }, 
+
     }
 
 }

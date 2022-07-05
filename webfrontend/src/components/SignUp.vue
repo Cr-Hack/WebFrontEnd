@@ -22,14 +22,13 @@
             <button class="input-group-btn" type="reset">Reset</button>
 
         </form>
-        <!-- <button @click="hashencryption()">Test</button> --> 
 
     </div>
 </template>
 
 <script>
 
-
+//import emailjs from 'emailjs-com';
 const axios = require('axios')
 
 export default {
@@ -104,6 +103,7 @@ export default {
                 let response = await axios.post('http://localhost:5000/auth/register', toServer)
                 console.log(response);
                 alert("Inscription réussie")
+                //this.sendEmailInsc()
                 this.$router.push({ name: 'SignIn' })
             } catch (error) {
                 console.log(error);
@@ -216,9 +216,6 @@ export default {
         }, 
 
         hashencryption : async function (message1){
-            
-            //const message1 = this.pwd;
-            //const message2= this.pwd_verif;
 
             const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
             const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
@@ -226,13 +223,23 @@ export default {
             const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
             console.log(hashHex_1);
             return hashHex_1 ;
-
-            /*const msgUint8_2 = new TextEncoder().encode(message2);                           
-            const hashBuffer_2 = await crypto.subtle.digest('SHA-256', msgUint8_2);           
-            const hashArray_2 = Array.from(new Uint8Array(hashBuffer_2));                     
-            const hashHex_2 = hashArray_2.map(b => b.toString(16).padStart(2, '0')).join(''); 
-            console.log(hashHex_2);*/
         }, 
+
+        /*sendEmailInsc() {
+
+            let name = this.fname + " "+ this.lname
+            var templateParams = {  
+                name_to: name ,
+                email: this.email,
+            }
+            
+            emailjs.send('service_inoyguh', 'template_0uivapo', templateParams, '-8WVggmuaOEK7xqrr')
+                .then(function(response) {
+                console.log('SUCCESS!', response.status, response.text);
+                }, function(error) {
+                console.log('FAILED...', error);
+            });
+        },*/
 
     }
 }

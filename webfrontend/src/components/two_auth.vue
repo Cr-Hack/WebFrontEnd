@@ -8,11 +8,6 @@
                 Entrer le code d'authentification envoyé par mail 
             </h2>
 
-            <!--<form class="container3" action="" method="post" @submit.prevent="sendEmailAuth">
-                <input class="input-group" v-model="email" type="email" name="email" id="" placeholder="Email" required="required">
-                <button class="input-group-btn btn" type="submit">Envoyer</button>
-            </form> --> 
-
             <form action="container3" method="post" @submit.prevent="verify_auth()">
                 <input class="input-group" type="number" v-model="code_auth" min="0" max="1000000" required>
                 <button class="input-group-btn btn" type="submit">Envoyer</button>
@@ -44,10 +39,10 @@ export default {
         //console.log("coucou")
         // send the email of double auth 
             this.code_send = this.generateCode()
-
+            //const hash_code_send = await this.hashencryption(this.code_send) ; 
+            
             var templateParams = {
-                name_to: "myriam",
-                email: "myriam.amor@efrei.net", //this.$store.getters.user.email, 
+                email: this.$store.getters.user.email, 
                 code : this.code_send
             }
             
@@ -56,9 +51,15 @@ export default {
                 console.log('SUCCESS!', response.status, response.text);
                 }, function(error) {
                 console.log('FAILED...', error);
-            });
+            })
+
+            // send to the signin page when the code was given for more than 1000 millisecondes
+            setTimeout(() => {
+                this.$router.push({ name: 'SignIn' })
+            }, 1000) 
+
         
-    }, 
+    },
     methods : {
 
         goToHome : function (){
@@ -66,27 +67,20 @@ export default {
             this.$router.push({name : 'Main Page'})
         }, 
 
-        sendEmailInsc() {
-
-            var templateParams = {
-                name_to: "myriam",
-                email: this.email,
-                //message: this.message, 
-            }
-            
-            emailjs.send('service_inoyguh', 'template_0uivapo', templateParams, '-8WVggmuaOEK7xqrr')
-                .then(function(response) {
-                console.log('SUCCESS!', response.status, response.text);
-                }, function(error) {
-                console.log('FAILED...', error);
-            });
-        },
-
         generateCode : function (){
             let code2 = Math.floor(Math.random() * 1000000)
             return code2 
         }, 
 
+        /*hashencryption : async function (message1){
+
+            const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
+            const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
+            const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
+            const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+            console.log(hashHex_1);
+            return hashHex_1 ;
+        }, */
 
         verify_auth : function (){
 
