@@ -16,8 +16,8 @@
                         <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple>
                     </label>
                 </div>
-                <div class="file-info">
-                    <span id="file">Fichier : {{dropzoneFile.name}}</span>
+                <div class="file-info" v-for="(file, index) of dropzoneFile" :key="index">
+                    <span id="file">Fichier : {{file.name}}</span>
                 </div>
                 <div class="user-box" id="container-dest">
                     <input v-model="receiverEmail" type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
@@ -56,20 +56,22 @@ export default {
             active.value = !active.value;
         };
         let dropzoneFile = ref("");
-
         const drop = (event) => {
-            dropzoneFile.value = event.dataTransfer.files[0];
+            dropzoneFile.value = ""
+            dropzoneFile.value = event.dataTransfer.files;
             active.value = !active.value;
         };
         
         const selectedFile = () => {
-            dropzoneFile.value = document.querySelector('.dropzoneFile').files[0];
+            dropzoneFile.value = ""
+            dropzoneFile.value = document.getElementById('fileInput').files;
         }
         return {active, toggleActive, dropzoneFile, drop, selectedFile};
     },
 
     data() {
         return {
+            files: [],
             fileToSend: '',
             receiverEmail: '',
             actions: [],
@@ -92,14 +94,15 @@ export default {
                 return
             }
             this.progress = true
-            this.setProgressBar(0)
             //alert("j'ai cliqué sur le bouton confirmer")
 
             // files is an array of files 
             const files = document.getElementById("fileInput").files
+             var unitprecentage = 100/(files.length * 4)
             var selectedFile 
 
             for (let i = 0; i < files.length; i++) {
+                this.setProgressBar(unitprecentage * i * 4)
                 selectedFile = files[i]
 
                 console.log(selectedFile.type)
@@ -117,12 +120,12 @@ export default {
                 const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
 
                 console.log("Encrypting file ....")
-                this.setProgressBar(25)
+                this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 1))
 
                 // file encryption 
                 var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
 
-                this.setProgressBar(75)
+                this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 3))
 
                 console.log("Encryption done !")
 
@@ -210,10 +213,9 @@ export default {
                     setTimeout(() => {view.actions.splice(view.actions.indexOf(action), 1)}, 20000)
                 }
 
-                this.setProgressBar(100)
+                this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 4))
             }
-
-            //document.getElementById("fileInput").files.clear()
+            document.getElementById("fileInput").value = ""
             this.receiverEmail = ""
             this.progress = false
         },
