@@ -10,22 +10,18 @@
                         <th>Fichier</th>
                         <th>Taille</th>
                         <th>Date/heure</th>
-                        <th>Télécharger</th>
+                        <th style="background-color: var(--red);">Télécharger</th>
                     </tr>
                 </thead>
-                <tbody v-if="!emptyTable">
+                <tbody>
                     <tr v-for="(info, index) of infos" :key="index">
                         <td>{{ info.sender }}</td>
                         <td>{{ info.other == info.sender ? this.$store.getters.user.email : info.other }}</td>
                         <td>{{ info.name }}</td>
+                        <td>{{info.size}} o</td>
                         <td>{{ info.datedeposite }}</td>
-                        <td><button class="btn" @click="downloadFile(info.fileID)"> Télécharger le fichier </button></td>
+                        <td><button class="btn" @click="downloadFile(info.fileID)"> <i class="fa-solid fa-download" id="btn-logo"></i> </button></td>
                     </tr>
-                </tbody>
-                <tbody v-else>
-                <tr>
-                    <td colspan="6"><h1 id="no-files">No files, for now at least...</h1></td>
-                </tr>
                 </tbody>
             </table>
         </div>
@@ -350,29 +346,29 @@ th{
 
 button{
   
-  width: 100%;
-  max-width: 100px;
-  display: inline-block;
-  outline: none;
-  cursor: pointer;
-  border: 1px solid var(--red);
-  text-align: left;
-  vertical-align: top;
-  padding: calc(.875rem - 3px) 63px calc(.875rem - 3px) 15px;
-  background-color: #00000000;
-  font-size: 14px;
-  letter-spacing: 0.16px;
-  min-height: 48px;
-  line-height: 1.29;
-  color: var(--red);
-  font-weight: 400;
-  transition: background 70ms cubic-bezier(0,0,.38,.9),box-shadow 70ms cubic-bezier(0,0,.38,.9),border-color 70ms cubic-bezier(0,0,.38,.9),outline 70ms cubic-bezier(0,0,.38,.9);
+    width: auto;
+    max-width: 100px;
+    display: inline-block;
+    outline: none;
+    cursor: pointer;
+    border: 1px solid var(--red);
+    vertical-align: top;
+    background-color: #00000000;
+    color: var(--red);
+    transition: background 70ms cubic-bezier(0,0,.38,.9),box-shadow 70ms cubic-bezier(0,0,.38,.9),border-color 70ms cubic-bezier(0,0,.38,.9),outline 70ms cubic-bezier(0,0,.38,.9);
+
 }
+
 
 button:hover{
     background: var(--red);
     color: #fff;
 }
+
+#btn-logo{
+    margin: 0 auto;
+}
+
 .style-table{
     font-size: 12px;
     font-weight: normal;
