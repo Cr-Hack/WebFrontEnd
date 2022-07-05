@@ -7,6 +7,7 @@ import SeeFile from '../views/SeeFile.vue';
 import SendFile from '../views/SendFile.vue';
 import NotFound from '../views/NotFound.vue';
 import store from '@/store' // short for @/store/index
+import two_auth from '@/components/two_auth'
 
 // les différents chemins 
 const routes = [{
@@ -73,6 +74,15 @@ const routes = [{
         component: NotFound,
         meta: {
             title: '404 Not Found',
+            requiresAuth: false
+        }
+    },
+    {
+        name: 'two_auth',
+        path: '/two_auth',
+        component: two_auth,
+        meta: {
+            title: "Page de 2FA",
             requiresAuth: false
         }
     },

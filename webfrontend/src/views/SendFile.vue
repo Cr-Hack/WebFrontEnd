@@ -13,7 +13,7 @@
                     <label for="fileInput">
                         <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3> 
                         <i class="fa-solid fa-file-circle-plus fa-2xl"></i>
-                        <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile">
+                        <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple>
                     </label>
                 </div>
                 <div class="file-info">
@@ -149,7 +149,7 @@ export default {
                     data: new Blob([encryptedFile]),
                     receiverID: receiverID.data.userId,
                     name: selectedFile.name,
-                    type: selectedFile.type,
+                    type: selectedFile.type || selectedFile.type.length > 0 ? selectedFile.type : "text/plain",
                     size: selectedFile.size,
                     receiverkey: this.arrayBufferToBase64(receiverEncSymKey),
                     senderkey: this.arrayBufferToBase64(senderEncSymKey),

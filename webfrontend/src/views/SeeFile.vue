@@ -5,8 +5,9 @@
             <table class="style-table">
                 <thead>
                     <tr>
-                        <th>De</th>
-                        <th>A</th>
+                        <th>Expéditeur</th>
+                        <th>Destinataire</th>
+                        <th class="over">Type</th>
                         <th>Fichier</th>
                         <th>Taille</th>
                         <th>Date/heure</th>
@@ -14,13 +15,20 @@
                     </tr>
                 </thead>
                 <tbody>
+
                     <tr v-for="(info, index) of infos" :key="index">
                         <td>{{ info.sender }}</td>
                         <td>{{ info.other == info.sender ? this.$store.getters.user.email : info.other }}</td>
+                        <td><i :class="formatType(info.type)"></i></td>
                         <td>{{ info.name }}</td>
                         <td>{{info.size}} o</td>
                         <td>{{ info.datedeposite }}</td>
                         <td><button class="btn" @click="downloadFile(info.fileID)"> <i class="fa-solid fa-download" id="btn-logo"></i> </button></td>
+                    </tr>
+                </tbody>
+                        <td>{{ formatSize(info.size) }}</td>
+                        <td>{{ formatDateTime(info.datedeposite) }}</td>
+                        <td><button class="btn" @click="downloadFile(info.fileID)"> Télécharger le fichier </button></td>
                     </tr>
                 </tbody>
             </table>
@@ -314,6 +322,60 @@ export default {
                 console.log("File decryption failed, ask sender to resend file ", err)
                 return 1
             }
+        },
+
+        formatSize: function (input) {
+            let bytes = Number(input)
+            if      (bytes >= 1073741824) { bytes = (bytes / 1073741824).toFixed(2) + " GB"; }
+            else if (bytes >= 1048576)    { bytes = (bytes / 1048576).toFixed(2) + " MB"; }
+            else if (bytes >= 1024)       { bytes = (bytes / 1024).toFixed(2) + " KB"; }
+            else if (bytes > 1)           { bytes = bytes + " bytes"; }
+            else if (bytes == 1)          { bytes = bytes + " byte"; }
+            else                          { bytes = "0 bytes"; }
+            return bytes;
+        },
+
+        formatDateTime: function (str) {
+            try{
+                var ints = str.match(/\d+/g)
+                return ints[0] + "/" + ints[1] + "/" + ints[2] + " " + ints[3] + ":" + ints[4]
+            }catch (error) {
+                return str
+            }
+        },
+
+        formatType: function (type) {
+            let htmlbase = 'icons fa-solid '//<span class="material-icons">'
+            switch (type) {
+                case "application/pdf":
+                    htmlbase += 'fa-file-pdf'
+                    break
+                case "application/x-zip-compressed":
+                    htmlbase += 'fa-file-archive'
+                    break
+                case "application/vnd.oasis.opendocument.spreadsheet":
+                    htmlbase += 'fa-file-excel'
+                    break
+                case "image/jpeg":
+                case "application/vnd.oasis.opendocument.graphics":
+                    htmlbase += 'fa-image'
+                    break
+                case "audio/mpeg":
+                    htmlbase += 'fa-volume-high'
+                    break
+                case "video/mp4":
+                case "video/webm":
+                    htmlbase += 'fa-video'
+                    break
+                case "text/plain":
+                    htmlbase += 'fa-file'
+                    break
+                default:
+                    console.log(type + " is not defined !")
+                    htmlbase += 'fa-file'
+                    break
+            }
+            return htmlbase //+ '</span>'
         }
     }
 
@@ -334,9 +396,7 @@ export default {
     justify-content: center;
     margin: 10px 70px 70px;
     box-shadow: 0px 35px 50px rgba(0,0,0,0.2);
-    max-height: 800px;
-    overflow-y: scroll ;
-
+    /* max-height: 800px; */
 }
 
 th{
@@ -394,5 +454,13 @@ button:hover{
 .style-table th {
     background-color: var(--blue);
     color: white;
+}
+
+.icons {
+    scale: 1.8;
+}
+
+.over {
+    z-index: 1;
 }
 </style>
