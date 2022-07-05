@@ -8,11 +8,12 @@
                         <th>De</th>
                         <th>A</th>
                         <th>Fichier</th>
+                        <th>Taille</th>
                         <th>Date/heure</th>
                         <th>Télécharger</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody v-if="!emptyTable">
                     <tr v-for="(info, index) of infos" :key="index">
                         <td>{{ info.sender }}</td>
                         <td>{{ info.other == info.sender ? this.$store.getters.user.email : info.other }}</td>
@@ -20,6 +21,11 @@
                         <td>{{ info.datedeposite }}</td>
                         <td><button class="btn" @click="downloadFile(info.fileID)"> Télécharger le fichier </button></td>
                     </tr>
+                </tbody>
+                <tbody v-else>
+                <tr>
+                    <td colspan="6"><h1 id="no-files">No files, for now at least...</h1></td>
+                </tr>
                 </tbody>
             </table>
         </div>
@@ -48,6 +54,13 @@ export default {
                     console.log(err)
                 })
         }, 
+
+        emptyTable: () => {
+            if(this.infos.length === 0){
+                return true
+            }
+            return false
+        },
 
         // function to download file : fetch the data, decrypt it, and convert it back to a file (blob)
         downloadFile: async function (fileID) {
@@ -313,6 +326,12 @@ export default {
 </script>
 
 <style scoped>
+
+#no-files{
+    color: #a3a3a3;
+    font-style: italic;
+    font-size: 20px;
+}
 .table-wrapper{
     display: flex;
     flex: wrap;

@@ -14,18 +14,20 @@ export default {
 </script>
 
 <style>
-    
+    .footer{
+        position: relative;
+        min-height: 460px;
+    }
     footer {
-        background-color: #f7b32b ; 
+        position: sticky;
+        top: 100%;
     }
 
 
     .txt-footer{
-        height: auto;
         color: #922d50;
-        font-weight:lighter;
-        padding: 2%;
-        margin : 0% ; 
+        font-weight: lighter;
+        height: auto;
     }
 
 </style>
