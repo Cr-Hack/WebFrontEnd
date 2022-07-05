@@ -83,10 +83,10 @@ export default {
 
             var arrayBuf = await selectedFile.arrayBuffer()  // convert the file to an arraybuffer
 
-            console.log("type of arrayBuff")
-            console.log(typeof(arrayBuf))
-            console.log(arrayBuf)
-            console.log(this.arrayBufferToStr(arrayBuf))
+            //console.log("type of arrayBuff")
+            //console.log(typeof(arrayBuf))
+            //console.log(arrayBuf)
+            //console.log(this.arrayBufferToBase64(arrayBuf))
 
             // AES key and IV
             const symKey = await this.aesKeyGeneration() // return an CryptoKey type
@@ -107,8 +107,8 @@ export default {
             const senderPublicKeyStr = this.$store.getters.user.publicKey
 
             // convert the string to ArrayBuffer
-            const receiverPublicKeyAB = this.strToArrayBuf(receiverPublicKeyStr)  
-            const senderPublicKeyAB = this.strToArrayBuf(senderPublicKeyStr) 
+            const receiverPublicKeyAB = this.base64ToArrayBuffer(receiverPublicKeyStr)  
+            const senderPublicKeyAB = this.base64ToArrayBuffer(senderPublicKeyStr) 
 
             // convert the ArrayBuffer to CryptoKey (with the importKey function)
             const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
@@ -131,35 +131,36 @@ export default {
             const senderEncIv = await this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
 
             console.log("longueur de la clé symétrique chiffrée du fichier pour récepteur et envoyeur")
-            console.log(this.arrayBufferToStr(receiverEncSymKey))
-            console.log(this.arrayBufferToStr(senderEncSymKey))
+            console.log(this.arrayBufferToBase64(receiverEncSymKey))
+            console.log(this.arrayBufferToBase64(senderEncSymKey))
+            console.log(new Uint8Array(senderEncSymKey))
 
             console.log("longueur du vecteur d'init")
-            console.log(this.arrayBufferToStr(receiverEncIv))
-            console.log(this.arrayBufferToStr(senderEncIv))
+            console.log(this.arrayBufferToBase64(receiverEncIv))
+            console.log(this.arrayBufferToBase64(senderEncIv))
 
-            //console.log("DATA SENDED !!! " + this.arrayBufferToStr(encryptedFile))
+            //console.log("DATA SENDED !!! " + this.arrayBufferToBase64(encryptedFile))
 
             const toServer = {
-                //data: this.arrayBufferToStringForFiles(encryptedFile),
+                //data: this.arrayBufferToBase64ingForFiles(encryptedFile),
                 data: new Blob([encryptedFile]),
                 receiverID: receiverID.data.userId,
                 name: selectedFile.name,
                 type: selectedFile.type,
                 size: selectedFile.size,
-                receiverkey: this.arrayBufferToStr(receiverEncSymKey),
-                senderkey: this.arrayBufferToStr(senderEncSymKey),
-                receiverIV: this.arrayBufferToStr(receiverEncIv),
-                senderIV: this.arrayBufferToStr(senderEncIv)
+                receiverkey: this.arrayBufferToBase64(receiverEncSymKey),
+                senderkey: this.arrayBufferToBase64(senderEncSymKey),
+                receiverIV: this.arrayBufferToBase64(receiverEncIv),
+                senderIV: this.arrayBufferToBase64(senderEncIv)
             }
 
             console.log("the encrypted file in string")
-            console.log(encryptedFile)
-            console.log(this.arrayBufferToStr(encryptedFile))
+            //console.log(encryptedFile)
+            //console.log(this.arrayBufferToBase64(encryptedFile))
             console.log("the encrypted receiver IV for file for file decryption in string")
-            console.log(this.arrayBufferToStr(receiverEncIv))
+            console.log(this.arrayBufferToBase64(receiverEncIv))
             console.log("the encrypted receiver aes key for file decryption in string")
-            console.log(this.arrayBufferToStr(receiverEncSymKey))
+            console.log(this.arrayBufferToBase64(receiverEncSymKey))
 
             /*
             // DOWNLOAD FILE TEST
@@ -218,31 +219,24 @@ export default {
             }
         }, 
 
-        strToArrayBuf: function (str) {
-            const buf = new ArrayBuffer(str.length);
-            const bufView = new Uint8Array(buf);
-            for (let i = 0, strLen = str.length; i < strLen; i++) {
-                bufView[i] = str.charCodeAt(i);
+        arrayBufferToBase64: function( buffer ) {
+            var binary = '';
+            var bytes = new Uint8Array( buffer );
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode( bytes[ i ] );
             }
-            return buf;
+            return window.btoa( binary );
         },
 
-        arrayBufferToStr: function (arrayBuf) {
-            return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
-        },
-
-        arrayBufferToStringForFiles: function (arrayBuf){
-            console.log("convertion started")
-            var str = new String()
-            var length = arrayBuf.byteLength
-            var remaining = arrayBuf.byteLength
-            while (remaining > 0) {
-                let remain = 500
-                if (remaining < 500) remain = remaining
-                str += String.fromCharCode.apply(null, new Uint8Array(arrayBuf.slice((length - remaining), (length - remaining) + remain)))
-                remaining -= remain
+        base64ToArrayBuffer: function(base64) {
+            var binary_string = window.atob(base64);
+            var len = binary_string.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
             }
-            return str
+            return bytes.buffer;
         },
 
         uint8ArrayToArrayBuffer: function (unit8array) {

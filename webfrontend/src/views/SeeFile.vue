@@ -74,19 +74,20 @@ export default {
             const fileName = dataFromServer.data.name  // string type
 
             console.log("the string of the file to be decrypted")
-            console.log(dataToDecryptAB)
-            console.log(this.arrayBufferToStr(dataToDecryptAB))
+            //console.log(dataToDecryptAB)
+            //console.log(this.arrayBufferToBase64(dataToDecryptAB))
             console.log("encrypted iv to decrypt the file for the user")
             console.log(fileIvStr)
             console.log("encrypted file aes key to decrypt the file for the user")
             console.log(fileAesKeyStr)
 
             // convert everything from string to ArrayBuffer
-            const userToDecRsaPrivSaltAB = this.strToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
-            const userToDecRsaPrivIvAB = this.strToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
-            const userRsaPrivateKeyAB = this.strToArrayBuffer(userRsaPrivateKeyStr)
-            const fileAesKeyAB = this.strToArrayBuffer(fileAesKeyStr)
-            const fileIvAB = this.strToArrayBuffer(fileIvStr)
+            console.log(userToDecRsaPrivSaltStr)
+            const userToDecRsaPrivSaltAB = this.base64ToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
+            const userToDecRsaPrivIvAB = this.base64ToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
+            const userRsaPrivateKeyAB = this.base64ToArrayBuffer(userRsaPrivateKeyStr)
+            const fileAesKeyAB = this.base64ToArrayBuffer(fileAesKeyStr)
+            const fileIvAB = this.base64ToArrayBuffer(fileIvStr)
 
             // convert salt and IV back to uint8array
             const userToDecRsaPrivSaltUint8Array = new Uint8Array(userToDecRsaPrivSaltAB) 
@@ -100,21 +101,25 @@ export default {
             // DEBUG 
             console.log("the AES decryption key converted to str")
             const debugkeyAB = await window.crypto.subtle.exportKey("raw", aesKeyToDecryptRsaCryptoKey)
-            const debugkeystr = this.arrayBufferToStr(debugkeyAB)
+            const debugkeystr = this.arrayBufferToBase64(debugkeyAB)
             console.log(debugkeystr)
 
 
             console.log("2")
             // decryption of the RSA private key 
             const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvUint8Array, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
+            console.log(this.arrayBufferToBase64(rsaPrivateKeyPlain))
 
             console.log("3")
             // import the RSA private key to CryptoKey type 
             const rsaPrivateKeyCryptoKey = await this.importRsaPrivateKey(rsaPrivateKeyPlain)
 
             console.log("4")
+            console.log(new Uint8Array(fileAesKeyAB))
+            console.log(rsaPrivateKeyCryptoKey)
             // decryption of the AES sym key (used to decrypt the file) and import it to CryptoKey
             const fileAesKeyABPlain = await this.rsaDecrypt(fileAesKeyAB, rsaPrivateKeyCryptoKey)
+            console.log(fileAesKeyABPlain)
             const fileAesKeyCryptoKey = await this.importAesKey(fileAesKeyABPlain)
             
             console.log("5")
@@ -155,20 +160,28 @@ export default {
             console.log("the file has been downloaded to the computer!")
         },
 
-        arrayBufferToStr: function (arrayBuf) {
-            return String.fromCharCode.apply(null, new Uint8Array(arrayBuf));
+        arrayBufferToBase64: function( buffer ) {
+            var binary = '';
+            var bytes = new Uint8Array( buffer );
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode( bytes[ i ] );
+            }
+            return window.btoa( binary );
         },
 
         /***** decryption of RSA private key with AES - WE NEED : userpassword, iv, salt *****/
         
         // convert the iv and the salt (string) back to ArrayBuffer
-        strToArrayBuffer: function (str){
-            const buf = new ArrayBuffer(str.length);
-            const bufView = new Uint8Array(buf);
-            for (let i = 0, strLen = str.length; i < strLen; i++) {
-                bufView[i] = str.charCodeAt(i);
+
+        base64ToArrayBuffer: function(base64) {
+            var binary_string = window.atob(base64);
+            var len = binary_string.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
             }
-            return buf;
+            return bytes.buffer;
         },
 
         ///// reconstruction of the AES sym key with the userpassword the iv and the salt
