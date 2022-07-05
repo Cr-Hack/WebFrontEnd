@@ -43,13 +43,12 @@ export default {
         goToMainPage : async function (){
             // check if the email and password are in the database 
             if (this.email != "" && this.pwd != ""){
-
                 // hash of password 
                 const hashpwd = await this.hashencryption(this.pwd) ; 
 
                 let data = {
                     email: this.email,
-                    hashpassword: hashpwd, 
+                    hashpassword: hashpwd, // to be changed back to hashpwd
                 }
                 try{
                     // send infos to the server 
@@ -58,6 +57,7 @@ export default {
                     //modify the token 
                     this.$store.dispatch("setToken", result.data.token);
                     this.$store.dispatch("addUser", {
+                        pwd: this.pwd,
                         email: this.email,
                         publicKey: result.data.publicKey,
                         privateKey: result.data.privateKey,
@@ -69,6 +69,7 @@ export default {
                     console.log(error)
                     if(error.response.data.error) alert(error.response.data.error)
                 }
+
             }
             else {
                 // 
@@ -96,7 +97,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 
     .container3{
         padding : 2% ;

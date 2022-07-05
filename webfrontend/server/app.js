@@ -2,6 +2,18 @@ const express = require('express')
 const app = express()
 const cors = require('cors')
 
+/*const https = require("https");
+const fs = require('fs');
+const options = {
+    key:fs.readFileSync('../localhost-key.pem'),
+    cert:fs.readFileSync('../localhost.pem'),
+}
+
+https.createServer(options, (req, res) => {
+    res.writeHead(200);
+    res.end("hello world\n");
+}).listen(8080);*/
+
 const db = [{
             id: 0,
             de : "Moi",
@@ -16,7 +28,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -25,7 +37,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -34,7 +46,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -61,7 +73,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -131,7 +143,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -140,7 +152,7 @@ const db = [{
             a : "Moi",
             fichier: "ordonnance2.pdf",
             dateheure:"xxx",
-            downloadable : true
+            downloadable : false
         }
         ,
         {
@@ -358,11 +370,3 @@ const db = [{
 
 app.use(cors())
 
-app.get('/', function(req, res){
-    res.send(db)
-})
-
-
-app.listen(3000, function(){
-    console.log('Example app listening on port 3000!')
-})

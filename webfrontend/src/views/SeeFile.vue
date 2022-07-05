@@ -32,7 +32,6 @@ import NavBar from './sidebar/NavBar.vue'
 
 export default {
     components : {NavBar}, 
-
     data(){
         return{
         infos : this.created()
@@ -52,187 +51,265 @@ export default {
 
         // function to download file : fetch the data, decrypt it, and convert it back to a file (blob)
         downloadFile: async function (fileID) {
-            alert("j'ai cliqué sur le bouton")
+            console.log("j'ai cliqué sur le bouton télécharger")
             const userPassword = this.$store.getters.user.pwd
             const userToDecRsaPrivSaltStr = this.$store.getters.user.salt  // string type
             const userToDecRsaPrivIvStr = this.$store.getters.user.iv  // string type
             const userRsaPrivateKeyStr = this.$store.getters.user.privateKey   // string type
 
+            console.log("the user passworld fetched from the token")
+            console.log(userPassword)
+
+            console.log("file ID of the file to be downloaded")
+            console.log(fileID)
+
             const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID }, { headers: { token: this.$store.getters.token } } )
-            const fileToDecryptStr = dataFromServer.data  // string type
+            console.log(dataFromServer.data)
+            const dataFromServerFile = await axios.post("http://localhost:5000/file/download", { fileID: fileID, file: true }, { headers: { token: this.$store.getters.token }, responseType: "blob" } )
+            const dataToDecryptAB = await dataFromServerFile.data.arrayBuffer()
+            
             const fileAesKeyStr = dataFromServer.data.publickey  // string type
             const fileIvStr = dataFromServer.data.iv // string type
             const fileType = dataFromServer.data.type  // string type 
             const fileName = dataFromServer.data.name  // string type
 
+            console.log("the string of the file to be decrypted")
+            //console.log(dataToDecryptAB)
+            //console.log(this.arrayBufferToBase64(dataToDecryptAB))
+            console.log("encrypted iv to decrypt the file for the user")
+            console.log(fileIvStr)
+            console.log("encrypted file aes key to decrypt the file for the user")
+            console.log(fileAesKeyStr)
+
             // convert everything from string to ArrayBuffer
-            const userToDecRsaPrivSaltAB = this.strToArrayBuffer(userToDecRsaPrivSaltStr)
-            const userToDecRsaPrivIvAB = this.strToArrayBuffer(userToDecRsaPrivIvStr)
-            const userRsaPrivateKeyAB = this.strToArrayBuffer(userRsaPrivateKeyStr)
-            const dataToDecryptAB = this.strToArrayBuffer(fileToDecryptStr)
-            const fileAesKeyAB = this.strToArrayBuffer(fileAesKeyStr)
-            const fileIvAB = this.strToArrayBuffer(fileIvStr)
+            console.log(userToDecRsaPrivSaltStr)
+            const userToDecRsaPrivSaltAB = this.base64ToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
+            const userToDecRsaPrivIvAB = this.base64ToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
+            const userRsaPrivateKeyAB = this.base64ToArrayBuffer(userRsaPrivateKeyStr)
+            const fileAesKeyAB = this.base64ToArrayBuffer(fileAesKeyStr)
+            const fileIvAB = this.base64ToArrayBuffer(fileIvStr)
+
+            // convert salt and IV back to uint8array
+            const userToDecRsaPrivSaltUint8Array = new Uint8Array(userToDecRsaPrivSaltAB) 
+            const userToDecRsaPrivIvUint8Array = new Uint8Array(userToDecRsaPrivIvAB)
 
             console.log("1")
             // reconstruction of the AES sym key with the userpassword the iv and the salt
             const keyMaterial = await this.aesKeyMaterial(userPassword);
-            const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltAB);
+            const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltUint8Array);
+
+            // DEBUG 
+            console.log("the AES decryption key converted to str")
+            const debugkeyAB = await window.crypto.subtle.exportKey("raw", aesKeyToDecryptRsaCryptoKey)
+            const debugkeystr = this.arrayBufferToBase64(debugkeyAB)
+            console.log(debugkeystr)
+
 
             console.log("2")
-            console.log(userToDecRsaPrivIvAB)
-            console.log(aesKeyToDecryptRsaCryptoKey)
-            console.log(userRsaPrivateKeyAB)
             // decryption of the RSA private key 
-            const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvAB, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
+            const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvUint8Array, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
+            console.log(this.arrayBufferToBase64(rsaPrivateKeyPlain))
 
             console.log("3")
             // import the RSA private key to CryptoKey type 
             const rsaPrivateKeyCryptoKey = await this.importRsaPrivateKey(rsaPrivateKeyPlain)
 
             console.log("4")
+            console.log(new Uint8Array(fileAesKeyAB))
+            console.log(rsaPrivateKeyCryptoKey)
             // decryption of the AES sym key (used to decrypt the file) and import it to CryptoKey
             const fileAesKeyABPlain = await this.rsaDecrypt(fileAesKeyAB, rsaPrivateKeyCryptoKey)
+            console.log(fileAesKeyABPlain)
             const fileAesKeyCryptoKey = await this.importAesKey(fileAesKeyABPlain)
             
-            console.log("4")
-            // decryption of the IV used to decrypt the file
-            const fileIvPlain = await this.rsaDecrypt(fileIvAB, rsaPrivateKeyCryptoKey)
-
             console.log("5")
-            /*** decryption of the file ***/
-            const filePlainAB = await this.aesDecryptFile(fileIvPlain, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
-            
+            // decryption of the IV used to decrypt the file
+            const fileIvPlain = await this.rsaDecrypt(fileIvAB, rsaPrivateKeyCryptoKey)  // returns an ArrayBuffer
+            // IV back to uint8array
+            const fileIvPlainUint8Array = new Uint8Array(fileIvPlain)
+
             console.log("6")
+            /*** decryption of the file ***/
+            const filePlainAB = await this.aesDecryptFile(fileIvPlainUint8Array, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
+            // this.aesDecryptFile() returns 1 if there's an error 
+
+            console.log("7, maintenant on va procéder au téléchagement du fichier")
+
             /*** download file to computer ***/
+            if (fileAesKeyAB == 1) {
+                alert("File decryption failed, ask sender to resend file")
+                return 
+            }
+            
+            this.downloadBlob(filePlainAB, fileType, fileName) // téléchargement du fichier
+        },
+
+        // download ArrayBuffer to file 
+        downloadBlob: function (filePlainAB, fileType, fileName) {
             // convert the ArrayBuffer file back to a blob
-            const blob = new Blob(filePlainAB, { type: fileType })  // we need to set the 'type' option of the blob ?
-            const url = URL.createObjectURL(blob)
+            const blob = new Blob([filePlainAB], { type: fileType })  // we need to set the 'type' option of the blob ?
+            const url = window.URL.createObjectURL(blob)
             const link = document.createElement('a')
-            link.href = link
+            link.href = url
             link.download = fileName
             document.body.appendChild(link)
             link.click()
-            URL.revokeObjectURL(url)
+            window.URL.revokeObjectURL(url)
 
-
+            console.log("8")
+            console.log("the file has been downloaded to the computer!")
         },
 
+        arrayBufferToBase64: function( buffer ) {
+            var binary = '';
+            var bytes = new Uint8Array( buffer );
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode( bytes[ i ] );
+            }
+            return window.btoa( binary );
+        },
 
         /***** decryption of RSA private key with AES - WE NEED : userpassword, iv, salt *****/
         
         // convert the iv and the salt (string) back to ArrayBuffer
-        strToArrayBuffer: function (str){
-            const buf = new ArrayBuffer(str.length);
-            const bufView = new Uint8Array(buf);
-            for (let i = 0, strLen = str.length; i < strLen; i++) {
-                bufView[i] = str.charCodeAt(i);
+
+        base64ToArrayBuffer: function(base64) {
+            var binary_string = window.atob(base64);
+            var len = binary_string.length;
+            var bytes = new Uint8Array(len);
+            for (var i = 0; i < len; i++) {
+                bytes[i] = binary_string.charCodeAt(i);
             }
-            return buf;
+            return bytes.buffer;
         },
 
         ///// reconstruction of the AES sym key with the userpassword the iv and the salt
         // 1. the AES "key material"
         aesKeyMaterial: async function (userPassword) {
-            let pwdVerif = userPassword;
-            let enc = new TextEncoder();
-            return await window.crypto.subtle.importKey(  // WTF is that ???
-                "raw",
-                enc.encode(pwdVerif),
-                "PBKDF2",
-                false,
-                ["deriveBits", "deriveKey"]
-            );
+            try {
+                let enc = new TextEncoder();
+                return await window.crypto.subtle.importKey(  
+                    "raw",
+                    enc.encode(userPassword),
+                    "PBKDF2",
+                    false,
+                    ["deriveKey"]
+                );
+            } catch (err) {
+                console.log("User password processing failed ", err)
+            }
         },
 
         // 2. the actuall AES key
         aesKey: async function (keyMaterial, user_salt) {
-            let symKey = await window.crypto.subtle.deriveKey( // returns a CryptoKey when the promise is fulfilled
-                {
-                    "name": "PBKDF2",
-                    salt: user_salt,
-                    "iterations": 100000,
-                    "hash": "SHA-256"
-                },
-                keyMaterial,
-                { "name": "AES-GCM", "length": 256 }, // so the key length will be 256
-                true,
-                ["encrypt", "decrypt"]
-            );
-            return symKey;
+            try {
+                return await window.crypto.subtle.deriveKey( // returns a CryptoKey when the promise is fulfilled
+                    {
+                        "name": "PBKDF2",
+                        salt: user_salt,
+                        "iterations": 100000,
+                        "hash": "SHA-256"
+                    },
+                    keyMaterial,
+                    { "name": "AES-GCM", "length": 256 }, // so the key length will be 256
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+            } catch (err) {
+                console.log("AES key reconstruction failed ", err)
+            }
         },
 
-        
         // actual decryption algorithm
         aesDecryptRsaPrivateKey: async function (initVector, aesKey, rsaPrivateEncKey){
-            console.log("avant de rentrer dans le déchiffrement")
-            let plaintext = await window.crypto.subtle.decrypt(
-                {
-                    name: "AES-GCM",
-                    iv: initVector
-                },
-                aesKey,
-                rsaPrivateEncKey
-            );
-            console.log("avant de retourner la clé rsa déchiffrée...")
-            return plaintext
+            try {
+                return await window.crypto.subtle.decrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: initVector
+                    },
+                    aesKey,
+                    rsaPrivateEncKey
+                );
+            } catch (err) {
+                console.log("decryption failed", err);
+            }
+            
+            
         }, 
 
         /***** (**) decryption of the AES sym key (or the IV) to decrypt the file - WE NEED : rsa private key (or IV) *****/
         // import of the RSA private key of the user back to CryptoKey type
         importRsaPrivateKey: async function (keyData){  // typeof(keyData) = ArrayBuffer
-            let privCryptoKey = await window.crypto.subtle.importKey(
-                "pkcs8",
-                keyData,
-                {
-                    name: "RSA-OAEP",
-                    hash: "SHA-256",
-                },
-                true,
-                ["decrypt"]
-            );
-            return privCryptoKey
+            try {
+                return await window.crypto.subtle.importKey(
+                    "pkcs8",
+                    keyData,
+                    {
+                        name: "RSA-OAEP",
+                        hash: "SHA-256",
+                    },
+                    true,
+                    ["decrypt"]
+                );
+
+            } catch (err) {
+                console.log("RSA key import failed ", err)
+            }
         },
         
         // the actual RSA decryption 
         rsaDecrypt: async function (encrAesKeyOrIv, rsaPrivKey){
-            let plaintext = await window.crypto.subtle.decrypt(
-                {
-                    name: "RSA-OAEP"
-                },
-                rsaPrivKey,
-                encrAesKeyOrIv
-            );
-            return plaintext
+            try {
+                return await window.crypto.subtle.decrypt(
+                    {
+                        name: "RSA-OAEP"
+                    },
+                    rsaPrivKey,
+                    encrAesKeyOrIv
+                );
+            } catch (err) {
+                console.log("RSA key decryption failed ", err)
+            }
         },
 
         /***** decryption of the date file with AES - WE NEED : the AES sym key and the iv decrypted with (**) and the actual data file *****/
         // import the AES key from ArrayBuffer to CryptoKey
         importAesKey: async function (keyData){
-            let privCryptoKey = await window.crypto.subtle.importKey(
-                "raw",
-                keyData,  // the ArrayBuffer to convert back to CryptoKey
-                "AES-GCM",
-                true,
-                ["encrypt", "decrypt"]
-            );
-            return privCryptoKey
+            try {
+                return await window.crypto.subtle.importKey(
+                    "raw",
+                    keyData,  // the ArrayBuffer to convert back to CryptoKey
+                    "AES-GCM",
+                    true,
+                    ["encrypt", "decrypt"]
+                );
+            } catch (err) {
+                console.log("AES key import failed ", err)
+            }
         },
 
-        // the actual AES decryption
+        // the actual AES decryption of the file
         aesDecryptFile: async function (initVector, aesKey, encFileData){
-            let plaintext = window.crypto.subtle.decrypt(
-                {
-                    name: "AES-GCM",
-                    iv: initVector
-                },
-                aesKey,
-                encFileData  // data to decrypt 
-            );
-            return plaintext
+            try {
+                return await window.crypto.subtle.decrypt(
+                    {
+                        name: "AES-GCM",
+                        iv: initVector
+                    },
+                    aesKey,
+                    encFileData  // data to decrypt 
+                );
+            } catch (err) {
+                console.log("File decryption failed, ask sender to resend file ", err)
+                return 1
+            }
         }
     }
 
 }
+
 </script>
 
 <style scoped>
@@ -252,6 +329,31 @@ th{
     top: 0px;
 }
 
+button{
+  
+  width: 100%;
+  max-width: 100px;
+  display: inline-block;
+  outline: none;
+  cursor: pointer;
+  border: 1px solid var(--red);
+  text-align: left;
+  vertical-align: top;
+  padding: calc(.875rem - 3px) 63px calc(.875rem - 3px) 15px;
+  background-color: #00000000;
+  font-size: 14px;
+  letter-spacing: 0.16px;
+  min-height: 48px;
+  line-height: 1.29;
+  color: var(--red);
+  font-weight: 400;
+  transition: background 70ms cubic-bezier(0,0,.38,.9),box-shadow 70ms cubic-bezier(0,0,.38,.9),border-color 70ms cubic-bezier(0,0,.38,.9),outline 70ms cubic-bezier(0,0,.38,.9);
+}
+
+button:hover{
+    background: var(--red);
+    color: #fff;
+}
 .style-table{
     font-size: 12px;
     font-weight: normal;
