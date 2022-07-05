@@ -72,120 +72,110 @@ export default {
 
         handleFile: async function () {
             //alert("j'ai cliqué sur le bouton confirmer")
-            var selectedFile = document.getElementById("fileInput").files[0]  // is a complex object (blob) ? 
-            console.log(selectedFile.type)
-            console.log(selectedFile.size)
-            console.log(selectedFile.name)
 
-            console.log(selectedFile)
-            console.log(typeof(selectedFile))
-            console.log(selectedFile.text())
+            // files is an array of files 
+            const files = document.getElementById("fileInput").files
+            var selectedFile 
 
-            var arrayBuf = await selectedFile.arrayBuffer()  // convert the file to an arraybuffer
+            for (let i = 0; i < files.length; i++) {
+                selectedFile = files[i]
 
-            //console.log("type of arrayBuff")
-            //console.log(typeof(arrayBuf))
-            //console.log(arrayBuf)
-            //console.log(this.arrayBufferToBase64(arrayBuf))
+                console.log(selectedFile.type)
+                console.log(selectedFile.size)
+                console.log(selectedFile.name)
 
-            // AES key and IV
-            const symKey = await this.aesKeyGeneration() // return an CryptoKey type
-            const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
+                console.log(selectedFile)
+                console.log(typeof (selectedFile))
+                console.log(selectedFile.text())
 
-            console.log("Encrypting file ....")
+                var arrayBuf = await selectedFile.arrayBuffer()  // convert the file to an arraybuffer
 
-            // file encryption 
-            var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
+                // AES key and IV
+                const symKey = await this.aesKeyGeneration() // return an CryptoKey type
+                const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
 
-            console.log("Encryption done !")
+                console.log("Encrypting file ....")
 
-            /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
-            // fetch the receiver's public RSA key (type string)
-            const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
-            const resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
-            const receiverPublicKeyStr = resultsPublicKey.data.publickey
-            const senderPublicKeyStr = this.$store.getters.user.publicKey
+                // file encryption 
+                var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
 
-            // convert the string to ArrayBuffer
-            const receiverPublicKeyAB = this.base64ToArrayBuffer(receiverPublicKeyStr)  
-            const senderPublicKeyAB = this.base64ToArrayBuffer(senderPublicKeyStr) 
+                console.log("Encryption done !")
 
-            // convert the ArrayBuffer to CryptoKey (with the importKey function)
-            const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
-            const senderPubKeyCryptoKey = await this.importPubKey(senderPublicKeyAB)
+                /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
+                // fetch the receiver's public RSA key (type string)
+                const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
+                const resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
+                const receiverPublicKeyStr = resultsPublicKey.data.publickey
+                const senderPublicKeyStr = this.$store.getters.user.publicKey
 
-            // convert the AES sym key (used to encrypt file) from CryptoKey to ArrayBuffer (export)
-            const symKeyAB = await window.crypto.subtle.exportKey("raw", symKey)  // export to an ArrayBuffer type
+                // convert the string to ArrayBuffer
+                const receiverPublicKeyAB = this.base64ToArrayBuffer(receiverPublicKeyStr)
+                const senderPublicKeyAB = this.base64ToArrayBuffer(senderPublicKeyStr)
 
-            // encrypt the aes sym key with the sender and receiver public key
-            const receiverEncSymKey = await this.rsaEncrypt(symKeyAB, receiverPubKeyCryptoKey)  // returns an arraybuffer
-            const senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
+                // convert the ArrayBuffer to CryptoKey (with the importKey function)
+                const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
+                const senderPubKeyCryptoKey = await this.importPubKey(senderPublicKeyAB)
+
+                // convert the AES sym key (used to encrypt file) from CryptoKey to ArrayBuffer (export)
+                const symKeyAB = await window.crypto.subtle.exportKey("raw", symKey)  // export to an ArrayBuffer type
+
+                // encrypt the aes sym key with the sender and receiver public key
+                const receiverEncSymKey = await this.rsaEncrypt(symKeyAB, receiverPubKeyCryptoKey)  // returns an arraybuffer
+                const senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
 
 
-            /***** init vector encryption for sender and receiver *****/
-            // convert uint8array to arraybuffer
-            const ivArrayBuf = this.uint8ArrayToArrayBuffer(initVector)
+                /***** init vector encryption for sender and receiver *****/
+                // convert uint8array to arraybuffer
+                const ivArrayBuf = this.uint8ArrayToArrayBuffer(initVector)
 
-            // encrypt the IVs with RSA public keys
-            const receiverEncIv = await this.rsaEncrypt(ivArrayBuf, receiverPubKeyCryptoKey)
-            const senderEncIv = await this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
+                // encrypt the IVs with RSA public keys
+                const receiverEncIv = await this.rsaEncrypt(ivArrayBuf, receiverPubKeyCryptoKey)
+                const senderEncIv = await this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
 
-            console.log("longueur de la clé symétrique chiffrée du fichier pour récepteur et envoyeur")
-            console.log(this.arrayBufferToBase64(receiverEncSymKey))
-            console.log(this.arrayBufferToBase64(senderEncSymKey))
-            console.log(new Uint8Array(senderEncSymKey))
+                console.log("longueur de la clé symétrique chiffrée du fichier pour récepteur et envoyeur")
+                console.log(this.arrayBufferToBase64(receiverEncSymKey))
+                console.log(this.arrayBufferToBase64(senderEncSymKey))
+                console.log(new Uint8Array(senderEncSymKey))
 
-            console.log("longueur du vecteur d'init")
-            console.log(this.arrayBufferToBase64(receiverEncIv))
-            console.log(this.arrayBufferToBase64(senderEncIv))
+                console.log("longueur du vecteur d'init")
+                console.log(this.arrayBufferToBase64(receiverEncIv))
+                console.log(this.arrayBufferToBase64(senderEncIv))
 
-            //console.log("DATA SENDED !!! " + this.arrayBufferToBase64(encryptedFile))
+                //console.log("DATA SENDED !!! " + this.arrayBufferToBase64(encryptedFile))
 
-            const toServer = {
-                //data: this.arrayBufferToBase64ingForFiles(encryptedFile),
-                data: new Blob([encryptedFile]),
-                receiverID: receiverID.data.userId,
-                name: selectedFile.name,
-                type: selectedFile.type,
-                size: selectedFile.size,
-                receiverkey: this.arrayBufferToBase64(receiverEncSymKey),
-                senderkey: this.arrayBufferToBase64(senderEncSymKey),
-                receiverIV: this.arrayBufferToBase64(receiverEncIv),
-                senderIV: this.arrayBufferToBase64(senderEncIv)
+                const toServer = {
+                    //data: this.arrayBufferToBase64ingForFiles(encryptedFile),
+                    data: new Blob([encryptedFile]),
+                    receiverID: receiverID.data.userId,
+                    name: selectedFile.name,
+                    type: selectedFile.type,
+                    size: selectedFile.size,
+                    receiverkey: this.arrayBufferToBase64(receiverEncSymKey),
+                    senderkey: this.arrayBufferToBase64(senderEncSymKey),
+                    receiverIV: this.arrayBufferToBase64(receiverEncIv),
+                    senderIV: this.arrayBufferToBase64(senderEncIv)
+                }
+
+                console.log("the encrypted file in string")
+                //console.log(encryptedFile)
+                //console.log(this.arrayBufferToBase64(encryptedFile))
+                console.log("the encrypted receiver IV for file for file decryption in string")
+                console.log(this.arrayBufferToBase64(receiverEncIv))
+                console.log("the encrypted receiver aes key for file decryption in string")
+                console.log(this.arrayBufferToBase64(receiverEncSymKey))
+
+
+                axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
+                    .then(function (response) {
+                        console.log(response);
+                        alert("votre fichier a bien été envoyé")
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    });
             }
 
-            console.log("the encrypted file in string")
-            //console.log(encryptedFile)
-            //console.log(this.arrayBufferToBase64(encryptedFile))
-            console.log("the encrypted receiver IV for file for file decryption in string")
-            console.log(this.arrayBufferToBase64(receiverEncIv))
-            console.log("the encrypted receiver aes key for file decryption in string")
-            console.log(this.arrayBufferToBase64(receiverEncSymKey))
-
-            /*
-            // DOWNLOAD FILE TEST
-            const blob = new Blob([arrayBuf], { type: selectedFile.type })  // we need to set the 'type' option of the blob ?
-            // const blob = selectedFile
-            const url = window.URL.createObjectURL(blob)
-            const link = document.createElement('a')
-            link.href = url
-            link.download = selectedFile.name
-            document.body.appendChild(link)
-            link.click()
-            window.URL.revokeObjectURL(url)
-
-            console.log("8")
-            console.log("the file has been downloaded to the computer!")
-            */
-
-            axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
-                .then(function (response) {
-                    console.log(response);
-                    alert("votre fichier a bien été envoyé")
-                })
-                .catch(function (error) {
-                    console.log(error);
-                });
+            
         },
 
         aesKeyGeneration: async function () {
