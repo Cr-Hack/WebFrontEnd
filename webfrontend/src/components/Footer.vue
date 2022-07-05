@@ -1,9 +1,11 @@
 <template>
-<div class="footer">
-    <footer>
-        <h4 class="txt-footer">© 2022 Cr'Hack</h4>
-    </footer>
-</div>
+    <div>
+        <div class="footer">
+            <footer>
+                <h4 class="txt-footer">© 2022 Cr'Hack</h4>
+            </footer>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -21,6 +23,7 @@ export default {
     footer {
         position: sticky;
         top: 100%;
+        background-color: #f7b32b ;
     }
 
 
