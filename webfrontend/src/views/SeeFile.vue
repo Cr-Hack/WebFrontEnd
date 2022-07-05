@@ -64,7 +64,9 @@ export default {
             console.log(fileID)
 
             const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID }, { headers: { token: this.$store.getters.token } } )
-            const fileToDecryptStr = dataFromServer.data.data  // string type
+            console.log(dataFromServer.data)
+            const dataFromServerFile = await axios.post("http://localhost:5000/file/download", { fileID: fileID, file: true }, { headers: { token: this.$store.getters.token }, responseType: "blob" } )
+            const dataToDecryptAB = await dataFromServerFile.data.arrayBuffer()
             
             const fileAesKeyStr = dataFromServer.data.publickey  // string type
             const fileIvStr = dataFromServer.data.iv // string type
@@ -72,7 +74,8 @@ export default {
             const fileName = dataFromServer.data.name  // string type
 
             console.log("the string of the file to be decrypted")
-            console.log(fileToDecryptStr)
+            console.log(dataToDecryptAB)
+            console.log(this.arrayBufferToStr(dataToDecryptAB))
             console.log("encrypted iv to decrypt the file for the user")
             console.log(fileIvStr)
             console.log("encrypted file aes key to decrypt the file for the user")
@@ -82,7 +85,6 @@ export default {
             const userToDecRsaPrivSaltAB = this.strToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
             const userToDecRsaPrivIvAB = this.strToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
             const userRsaPrivateKeyAB = this.strToArrayBuffer(userRsaPrivateKeyStr)
-            const dataToDecryptAB = this.strToArrayBuffer(fileToDecryptStr)
             const fileAesKeyAB = this.strToArrayBuffer(fileAesKeyStr)
             const fileIvAB = this.strToArrayBuffer(fileIvStr)
 

@@ -41,11 +41,11 @@ export default {
             // check if the email and password are in the database 
             if (this.email != "" && this.pwd != ""){
                 // hash of password 
-                //const hashpwd = await this.hashencryption(this.pwd) ; 
+                const hashpwd = await this.hashencryption(this.pwd) ; 
 
                 let data = {
                     email: this.email,
-                    hashpassword: this.pwd, // to be changed back to hashpwd
+                    hashpassword: hashpwd, // to be changed back to hashpwd
                 }
                 try{
                     // send infos to the server 
