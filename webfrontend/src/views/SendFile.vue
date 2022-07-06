@@ -16,8 +16,8 @@
                         <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple="multiple">
                     </label>
                 </div>
-                <div class="file-info" v-for="(file, index) of dropzoneFile" :key="index">
-                    <span id="file">Fichier : {{file.name}}</span>
+                <div class="file-info" >
+                    Fichier(s) : <span id="file" v-for="(file, index) of dropzoneFile" :key="index">{{file.name}}</span>
                 </div>
                 <div class="user-box" id="container-dest">
                     <input v-model="receiverEmail" type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
@@ -158,6 +158,7 @@ export default {
                     // encrypt the current chunk 
                     var chunkEnc = await this.aesEncryptFileChunk(chunkPlain, ivchunk, symKey)
                     console.log("current chunk encrypted")
+                    console.log(chunkEnc) /*added by Ari */
 
                     // let's stick the current chunk to the previous sections
                     this.mergeArrayBuffers(encryptedFile, chunkEnc)

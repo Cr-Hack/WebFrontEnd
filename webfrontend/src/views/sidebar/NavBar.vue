@@ -1,9 +1,10 @@
 <template>
 <nav>
-    <div class="container-rightSide" @connexionReussie="email = $event">
-        <img src="../../assets/logo.png" alt="Cr'Hack">
+    <div class="container-rightSide"> 
         <i id="account" class="fa-solid fa-user"></i>
+        <p>{{user_name}}</p>
     </div>
+    
     <div id="resp-menu">
         <i class="fa-solid fa-bars"></i>
     </div>
@@ -21,7 +22,20 @@
 
 <script>
 export default {
+    data(){
+        return{
+            user_name : ''
+        }
+    },
+
     methods:{
+        getUser: async function(){
+            this.user_name = this.$store.getters.user.first_name
+            console.log(this.user_name)
+        }
+    },
+    beforeMount(){
+        this.getUser()
     }
 }
 </script>
@@ -39,11 +53,11 @@ nav{
 }
 
 img{
-    width: 40px;
+    width: 100px;
 }
 
 .container-rightSide{
-    width:100px;
+    width: 200px;
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
@@ -54,7 +68,7 @@ img{
 }
 
 #account{
-    margin-top: 10px;
+    margin: auto auto;
 }
 
 .nav_link{

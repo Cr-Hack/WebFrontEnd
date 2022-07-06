@@ -1,7 +1,9 @@
 <template>
     <div>
         <nav class="nav">
-            <router-link to="/"><img class="img2" src="../assets/logo.png" alt="logo"></router-link>
+            <div class="back-container">
+                <router-link to="/"><i class="fa-solid fa-square-caret-left fa-2x" id="back"></i></router-link>
+            </div>
         </nav>
 
 
@@ -266,7 +268,15 @@ export default {
 </script>
 
 <style scoped>
+    #back{
+        padding:10px;
+    }
 
+    .back-container{
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+    }
     .container3{
         padding : 2% ;
         margin : 0 auto ; 
