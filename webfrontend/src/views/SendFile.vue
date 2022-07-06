@@ -3,7 +3,7 @@
         <nav-bar/>
         <div class="send-box">
             <h2 id="title">Formulaire d'envoi chiffré</h2>
-            <form class="formy" method="post" @submit.prevent="handleFile()">
+            <form class="formy" method="post" @submit.prevent="handleFile()" @reset.prevent="deleteInputFile()">
                 <div @dragenter.prevent="toggleActive" 
                 @dragleave.prevent="toggleActive" @dragover.prevent
                 @drop.prevent="drop"
@@ -13,7 +13,7 @@
                     <label for="fileInput">
                         <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3> 
                         <i class="fa-solid fa-file-circle-plus fa-2xl"></i>
-                        <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple>
+                        <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple="multiple">
                     </label>
                 </div>
                 <div class="file-info">
@@ -24,7 +24,7 @@
                 </div>
                 <div class="btn">
                     <button type="submit" id="confirm" class="btn_l">Confirmer</button>
-                    <button type="submit" id="del" class="btn_l">Annuler</button>
+                    <button type="reset" id="del" class="btn_l">Annuler</button>
                 </div>
             </form>
         </div>
@@ -52,6 +52,10 @@ export default {
         
         const selectedFile = () => {
             dropzoneFile.value = document.querySelector('.dropzoneFile').files[0];
+            for(var i = 0; i < document.querySelector('.dropzoneFile').files.length; i++){
+                    console.log(document.querySelector('.dropzoneFile').files[i])
+            }
+            
         }
         return {active, toggleActive, dropzoneFile, drop, selectedFile};
     },
@@ -63,11 +67,9 @@ export default {
         }
     }, 
     methods:{
-        showPreview(event){
-            if(event.target.files.length > 0){
-                var src = URL.createObjectURL(event.target.files[0]);
-                var preview = document.getElementById("file-ip-1-preview");
-                preview.src = src;
+        deleteInputFile: function(){
+            for(var i = 0; i < document.getElementById("fileInput").files.length; i++){
+                console.log("delete file here")
             }
         },
 

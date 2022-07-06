@@ -4,12 +4,16 @@
         <img src="../../assets/logo.png" alt="Cr'Hack">
         <i id="account" class="fa-solid fa-user"></i>
     </div>
+    <div id="resp-menu">
+        <i class="fa-solid fa-bars"></i>
+    </div>
     <div class="nav_link">
         <router-link to="/MainPage">Guide</router-link>
         <router-link to="/seefile">Afficher</router-link>
         <router-link to="/sendfile">Envoyer un fichier</router-link>
         <router-link to="/"><i class="fa-solid fa-arrow-right-from-bracket"></i></router-link>
     </div>
+
 </nav>
 <router-view/>
 
@@ -43,6 +47,10 @@ img{
     display: flex;
     flex-direction: row;
     justify-content: space-evenly;
+}
+
+#resp-menu{
+    display: none;
 }
 
 #account{
@@ -81,10 +89,16 @@ img{
     border-bottom: 1px solid var(--red);
 }
 
-@media (max-width: 400px){
+@media all and (max-width: 500px){
+    #resp-menu{
+        display: block;
+    }
     .nav_link{
+        position: relative;
         flex-direction: column;
     }
-
+    nav{
+        flex-direction: column;
+    }
 }
 </style>
