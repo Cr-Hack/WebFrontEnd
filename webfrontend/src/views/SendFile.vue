@@ -30,6 +30,32 @@
                     <div id="progress" class="progress" :style="progress_style"></div>
                 </div>
             </form>
+
+            <h2 id="title">Trouver l'email du Destinataire</h2>
+            <form class="formy" method="post" @submit.prevent="CheckContact()" @reset.prevent="deleteContacts()" >
+                <div class="user-box" id="container-dest">
+                    <input v-model="email_search" type="text" class="dest" required="required" placeholder="Destinataire">
+                </div>
+                <div class="btn">
+                    <button type="submit" id="confirm" class="btn_l">Confirmer</button>
+                    <button type="reset" id="del" class="btn_l">Annuler</button>
+                </div>
+            </form>
+
+            <table>
+                <thead>
+                    <tr>
+                       Contacts
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="email in email_contact" :key="email">
+                        <td>{{email}}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
         </div>
         <ul v-for="(action, index) of actions" :key="index">
             <li class="item">
@@ -80,10 +106,27 @@ export default {
             receiverEmail: '',
             actions: [],
             progress: false,
-            progress_style: "width: 0%"
+            progress_style: "width: 0%", 
+            email_search : '', 
+            infos : this.created(), 
+            email_contact : [], 
+            filteredArray : [], 
+
         }
     }, 
     methods:{
+
+        created: async function (){
+            axios.post('http://localhost:5000/file/view', {}, {headers:{token: this.$store.getters.token}})
+                .then((response) => {
+                    this.infos = response.data.files
+					console.log(response)
+                })
+                .catch((err) => {
+                    console.log(err)
+                })
+        }, 
+
         deleteInputFile: function(){
             for(var i = 0; i < document.getElementById("fileInput").files.length; i++){
                 console.log("delete file here")
@@ -341,6 +384,53 @@ export default {
             let hash = await this.hashencryption(strIV + id)
             return new Uint8Array(this.base64ToArrayBuffer(hash.slice(0, strIV.length)))
         },
+
+        CheckContact : function (){
+
+            this.infos.forEach(element => {
+                /*show sender or receiver if it is not the current person  ->         
+                info.other = email of the receiver */
+
+                // show email of sender if email of receiver = email of person 
+
+                if (element.other === this.$store.getters.user.email){
+                    // test if what the person search is in the email 
+                    if (element.sender.includes(this.email_search)){
+                        this.email_contact.push(element.sender)
+                    } 
+                } 
+                // show email of receiver if email of sender = email of person
+                else {
+                    // test if what the person search is in the email 
+                    if (element.other.includes(this.email_search)){
+                        this.email_contact.push(element.other)
+                    } 
+                }
+            })
+
+            // get rid of double 
+            /*this.email_contact.forEach(ele =>{
+                if 
+            })*/
+            /*console.log(this.infos)
+            console.log(this.email_contact)
+            
+
+            for (var i = 0; i < this.email_contact.length; i++) {
+                if (this.email_contact[i]== this.email_contact[i]){
+                    this.email_contact[i]
+                }
+            }*/
+
+            
+        }, 
+
+        deleteContacts : function (){
+            // reset the set of contact 
+            this.email_contact = []
+            this.filteredArray = []
+            this.email_search = ''
+        }
     }        
 }
 </script>

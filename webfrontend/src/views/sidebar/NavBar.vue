@@ -22,20 +22,22 @@
 
 <script>
 export default {
-    data(){
-        return{
-            user_name : ''
-        }
-    },
+    setup(){
 
-    methods:{
-        getUser: async function(){
-            this.user_name = this.$store.getters.user.first_name
-            console.log(this.user_name)
+    }, 
+    data(){
+        return {
+            fname: this.$store.getters.user.firstname,
+            lname: this.$store.getters.user.lastname,
         }
-    },
-    beforeMount(){
-        this.getUser()
+    }, 
+    methods:{
+
+    }, 
+    mounted () {
+        console.log(this.$store.getters.user.email)
+        console.log (this.$store.getters.user.firstname)
+        console.log (this.$store.getters.user.lastname)
     }
 }
 </script>
