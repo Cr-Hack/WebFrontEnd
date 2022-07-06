@@ -30,7 +30,7 @@
 
                     </tr>
                 </tbody>
-                <tbody v-if="emptyTable">
+                <tbody v-if="this.infos.length == 0">
                     <td colspan="8"><span id="emptyTable"><h2><i class="fa-solid fa-magnifying-glass"></i> I think you have no file...</h2></span></td>
                 </tbody>
             </table>
@@ -50,8 +50,7 @@ export default {
     components : {NavBar}, 
     data(){
         return{
-            infos : this.created(),
-            emptyTable: true
+            infos : this.created()
         }
     },
     methods: {
@@ -59,12 +58,9 @@ export default {
             axios.post('http://localhost:5000/file/view', {}, {headers:{token: this.$store.getters.token}})
                 .then((response) => {
                     this.infos = response.data.files
-                    if (this.infos.length != 0){
-                        this.emptyTable = false;
-                    }
                 })
-                .catch((err) => {
-                    console.log(err)
+                .catch(() => {
+                    this.infos = []
                 })
         }, 
 
@@ -137,42 +133,32 @@ export default {
 
                 try{
                     for (let i = 0; i < totalParts; i++) {
-                        console.log(1)
                         // info about the chunk to decrypt 
                         let dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID, partNumber: i }, { headers: { token: this.$store.getters.token } })
-                        console.log(2)
                         // the file to decrypt
                         let dataFromServerFile = await axios.post("http://localhost:5000/file/download", { fileID: fileID, file: true, partNumber: i }, { headers: { token: this.$store.getters.token }, responseType: "blob" })
-                        console.log(3)
                         let chunkToDecryptAB = await dataFromServerFile.data.arrayBuffer()
-                        console.log(4)
 
                         //console.log("les données que je reçois")
                         //console.log(dataFromServer)
 
                         let chunkIvStr = dataFromServer.data.iv // string type
-                        console.log(5)
                         //console.log("IV-------------")
                         //console.log(chunkIvStr)
                         let chunkIvAB = this.base64ToArrayBuffer(chunkIvStr)
-                        console.log(6)
                         //console.log(chunkIvAB)
 
                         // decryption of the IV used to decrypt the file
                         let chunkIvPlain = await this.rsaDecrypt(chunkIvAB, rsaPrivateKeyCryptoKey)  // returns an ArrayBuffer
-                        console.log(7)
                         // IV back to uint8array
                         let chunkIvPlainUint8Array = new Uint8Array(chunkIvPlain)
-                        console.log(8)
 
                         /*** decryption of the file ***/
                         //console.log("decryption of chunk " + i + " started!")
                         let chunkPlain = await this.aesDecryptFile(chunkIvPlainUint8Array, fileAesKeyCryptoKey, chunkToDecryptAB)  // we now have the ArrayBuffer of the file!
-                        console.log(9)
                         //console.log("decryption of chunk " + i + " ended!")
 
                         writer.write(new Uint8Array(chunkPlain))
-                        console.log(10)
                     }
                 }catch(error){
                     writer.abort()

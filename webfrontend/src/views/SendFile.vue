@@ -13,7 +13,7 @@
                     <label for="fileInput">
                         <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3> 
                         <i class="fa-solid fa-file-circle-plus fa-2xl"></i>
-                        <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple="multiple">
+                        <input id="fileInput" type="file" class="dropzoneFile" @change="selectedFile" multiple="multiple">
                     </label>
                 </div>
                 <div class="file-info" >
@@ -79,9 +79,9 @@ export default {
         
         const selectedFile = () => {
             dropzoneFile.value = ""
-            dropzoneFile.value = document.querySelector('.dropzoneFile').files;
-            for(var i = 0; i < document.querySelector('.dropzoneFile').files.length; i++){
-                    console.log(document.querySelector('.dropzoneFile').files[i])
+            dropzoneFile.value = document.getElementById('fileInput').files;
+            for(var i = 0; i < document.getElementById('fileInput').files.length; i++){
+                    console.log(document.getElementById('fileInput').files[i])
             }
             
         }
@@ -96,7 +96,6 @@ export default {
             actions: [],
             progress: false,
             progress_style: "width: 0%", 
-            email_search : '', 
             infos : this.created(), 
             email_contact : [], 
             filteredArray : [],
@@ -123,10 +122,15 @@ export default {
 
         deleteInputFile: function(){
             document.getElementById("fileInput").value = ""
+            this.dropzoneFile = []
             this.$forceUpdate()
         },
 
         handleFile: async function () {
+            if(this.dropzoneFile.length == 0){
+                alert("Vous devez sélectionner un fichier !")
+                return
+            }
             if(this.progress){
                 alert("Une opération est déjà en cours.")
                 return
@@ -159,7 +163,7 @@ export default {
 
 
             // files is an array of files 
-            const files = document.getElementById("fileInput").files
+            const files = this.dropzoneFile
 
             // size of each chunk in Megabyte
             const chunkSize = 64 * (2 ** 20)  // in octets (= 128 Mo)
@@ -286,6 +290,7 @@ export default {
             }
             document.getElementById("fileInput").value = ""
             this.receiverEmail = ""
+            this.dropzoneFile = []
             this.progress = false
             this.$forceUpdate()
         },
@@ -436,13 +441,6 @@ export default {
             })
             return Object.keys(unique);
         }, 
-
-        deleteContacts : function (){
-            // reset the set of contact 
-            this.email_contact = []
-            this.filteredArray = []
-            this.email_search = ''
-        }
     }        
 }
 </script>
@@ -611,7 +609,7 @@ label{
 }
 
 .success+.timebar{
-    background-color: #1C8E18;
+    background-color: #07d300;
     animation: 8.5s durationBar;
     flex-shrink: 1;
 }
