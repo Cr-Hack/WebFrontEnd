@@ -22,6 +22,18 @@
                 <div class="user-box" id="container-dest">
                     <input v-model="receiverEmail" type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
                 </div>
+                <table>
+                    <thead>
+                        <tr>
+                        Contacts
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="email in filteredArray" :key="email">
+                            <td>{{email}}</td>
+                        </tr>
+                    </tbody>
+                </table>
                 <div class="btn">
                     <button type="submit" id="confirm" class="btn_l">Confirmer</button>
                     <button type="reset" id="del" class="btn_l" @click="deleteInputFile()">Annuler</button>
@@ -30,32 +42,6 @@
                     <div id="progress" class="progress" :style="progress_style"></div>
                 </div>
             </form>
-
-            <h2 id="title">Trouver l'email du destinataire</h2>
-            <form class="formy" method="post" @submit.prevent="CheckContact()" @reset.prevent="deleteContacts()" >
-                <div class="user-box" id="container-dest">
-                    <input v-model="email_search" type="text" class="dest" required="required" placeholder="Destinataire">
-                </div>
-                <div class="btn">
-                    <button type="submit" id="confirm" class="btn_l">Confirmer</button>
-                    <button type="reset" id="del" class="btn_l">Annuler</button>
-                </div>
-            </form>
-
-            <table>
-                <thead>
-                    <tr>
-                       Contacts
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="email in filteredArray" :key="email">
-                        <td>{{email}}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-
         </div>
         <ul v-for="(action, index) of actions" :key="index">
             <li class="item">
@@ -113,17 +99,22 @@ export default {
             email_search : '', 
             infos : this.created(), 
             email_contact : [], 
-            filteredArray : [], 
-
+            filteredArray : [],
         }
-    }, 
+    },
+
+    watch: {
+        receiverEmail: function (value) {
+            this.checkContact(value)
+        }
+    },
     methods:{
 
         created: async function (){
             axios.post('http://localhost:5000/file/view', {}, {headers:{token: this.$store.getters.token}})
                 .then((response) => {
                     this.infos = response.data.files
-					console.log(response)
+                    this.checkContact()
                 })
                 .catch((err) => {
                     console.log(err)
@@ -131,13 +122,8 @@ export default {
         }, 
 
         deleteInputFile: function(){
-            console.log(document.getElementById("fileInput").files.length)
-            /*for(var i = 0; i < document.getElementById("fileInput").files.length; i++){
-                document.getElementById("fileInput").files[i].value = 
-            }*/
             document.getElementById("fileInput").value = ""
             this.$forceUpdate()
-            console.log(document.getElementById("fileInput").files.length)
         },
 
         handleFile: async function () {
@@ -149,12 +135,12 @@ export default {
 
             /***** fetch global data *****/
             // fetch the receiver's public RSA key (type string)
-            console.log("demande infos au serveur")
+            //console.log("demande infos au serveur")
             const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
             const resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
             const receiverPublicKeyStr = resultsPublicKey.data.publickey
             const senderPublicKeyStr = this.$store.getters.user.publicKey
-            console.log("demande infos au serveur fin")
+            //console.log("demande infos au serveur fin")
 
             // convert the string to ArrayBuffer
             const receiverPublicKeyAB = this.base64ToArrayBuffer(receiverPublicKeyStr)
@@ -175,161 +161,134 @@ export default {
             // files is an array of files 
             const files = document.getElementById("fileInput").files
 
-            var unitprecentage = 100 / (files.length * 4)
+            // size of each chunk in Megabyte
+            const chunkSize = 64 * (2 ** 20)  // in octets (= 128 Mo)
+
             var selectedFile
 
+            var parts = 0
+            for(var i = 0; i < files.length; i++){
+                parts += Math.ceil(files[i].size / chunkSize)
+            }
+            var unitprecentage = 100 / (parts * 3)
+            this.setProgressBar(0)
+            var doneParts = 0
+
             for (let i = 0; i < files.length; i++) {
-                this.setProgressBar(unitprecentage * i * 4)
-                selectedFile = files[i] // this is a blob
+                try{
+                    selectedFile = files[i] // this is a blob
 
-                console.log("Encrypting file ....")
-                this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 1))
-
-                /*
-                We are going to chunk the file to size of 64 Mo and send it chunk by chunk to the server
-                */
-                const nbChunks = Math.ceil((selectedFile.size / 2**20) / 128)
-                console.log("total number of chuncks")
-                console.log(nbChunks)
-
-                // size of each chunk in Megabyte
-                const chunkSize = 128 * (2 ** 20)  // in octets (= 128 Mo) 
-
-                /***** encryp each file chunk (with different iv but same aes key) *****/
-                for (let j = 0; j < nbChunks; j++) {
-                    //let ivchunk = this.incrementIv(iv0, i)
-                    let ivChunk = window.crypto.getRandomValues(new Uint8Array(12))
+                    //console.log("Encrypting file ....")
+                    /*
+                    We are going to chunk the file to size of 64 Mo and send it chunk by chunk to the server
+                    */
+                    const nbChunks = Math.ceil(selectedFile.size / chunkSize)
+                    //console.log("total number of chuncks")
+                    //console.log(nbChunks)
 
 
-                    // the current chunck to enc
-                    var chunkPlainBlob
-                    if (j < nbChunks - 1) {
-                        chunkPlainBlob = selectedFile.slice(j * chunkSize, j * chunkSize + chunkSize); // blob
-                    }
-                    else {
-                        chunkPlainBlob = selectedFile.slice(j * chunkSize); // blob - read from start point to the end
-                    }
-                    
-                    let chunkPlainAB = await chunkPlainBlob.arrayBuffer()  // convert to arraybuffer
+                    /***** encryp each file chunk (with different iv but same aes key) *****/
+                    for (let j = 0; j < nbChunks; j++) {
+                        try {
+                            //let ivchunk = this.incrementIv(iv0, i)
+                            let ivChunk = window.crypto.getRandomValues(new Uint8Array(12))
 
-                    // encrypt the current chunk 
-                    var chunkEnc = await this.aesEncryptFileChunk(chunkPlainAB, ivChunk, symKey)  // arraybuffer
-                    console.log("the chunk has been encrypted properly")
-                    console.log(chunkEnc)
 
-                    // encryption of the iv with RSA public keys
-                    const ivChunkAB = this.uint8ArrayToArrayBuffer(ivChunk)
-                    var receiverEncIv = await this.rsaEncrypt(ivChunkAB, receiverPubKeyCryptoKey)
-                    var senderEncIv = await this.rsaEncrypt(ivChunkAB, senderPubKeyCryptoKey)
+                            // the current chunck to enc
+                            var chunkPlainBlob
+                            if (j < nbChunks - 1) {
+                                chunkPlainBlob = selectedFile.slice(j * chunkSize, j * chunkSize + chunkSize); // blob
+                            }
+                            else {
+                                chunkPlainBlob = selectedFile.slice(j * chunkSize); // blob - read from start point to the end
+                            }
+                            
+                            let chunkPlainAB = await chunkPlainBlob.arrayBuffer()  // convert to arraybuffer
 
-                    var toServer
-                    if (j === 0) {
-                        toServer = {
-                            data: new Blob([chunkEnc]),
-                            totalParts: nbChunks,
-                            partNumber: j,
-                            receiverID: receiverID.data.userId,
-                            name: selectedFile.name,
-                            type: selectedFile.type || selectedFile.type.length > 0 ? selectedFile.type : "text/plain",
-                            size: selectedFile.size,
-                            receiverkey: this.arrayBufferToBase64(receiverEncSymKey),
-                            senderkey: this.arrayBufferToBase64(senderEncSymKey),
-                            receiverIV: this.arrayBufferToBase64(receiverEncIv),
-                            senderIV: this.arrayBufferToBase64(senderEncIv)
+                            this.setProgressBar(unitprecentage * doneParts * 3 + (unitprecentage * 1))
+
+                            // encrypt the current chunk 
+                            var chunkEnc = await this.aesEncryptFileChunk(chunkPlainAB, ivChunk, symKey)  // arraybuffer
+                            //console.log("the chunk has been encrypted properly")
+                            //console.log(chunkEnc)
+
+                            // encryption of the iv with RSA public keys
+                            const ivChunkAB = this.uint8ArrayToArrayBuffer(ivChunk)
+                            var receiverEncIv = await this.rsaEncrypt(ivChunkAB, receiverPubKeyCryptoKey)
+                            var senderEncIv = await this.rsaEncrypt(ivChunkAB, senderPubKeyCryptoKey)
+
+                            var toServer
+                            if (j === 0) {
+                                toServer = {
+                                    data: new Blob([chunkEnc]),
+                                    totalParts: nbChunks,
+                                    partNumber: j,
+                                    receiverID: receiverID.data.userId,
+                                    name: selectedFile.name,
+                                    type: selectedFile.type || selectedFile.type.length > 0 ? selectedFile.type : "text/plain",
+                                    size: selectedFile.size,
+                                    receiverkey: this.arrayBufferToBase64(receiverEncSymKey),
+                                    senderkey: this.arrayBufferToBase64(senderEncSymKey),
+                                    receiverIV: this.arrayBufferToBase64(receiverEncIv),
+                                    senderIV: this.arrayBufferToBase64(senderEncIv)
+                                }
+                            } 
+                            else {
+                                toServer = {
+                                    fileID: selectedFileID,
+                                    data: new Blob([chunkEnc]),
+                                    totalParts: nbChunks,
+                                    partNumber: j,
+                                    receiverID: receiverID.data.userId,
+                                    name: selectedFile.name,
+                                    type: selectedFile.type || selectedFile.type.length > 0 ? selectedFile.type : "text/plain",
+                                    size: selectedFile.size,
+                                    receiverkey: this.arrayBufferToBase64(receiverEncSymKey),
+                                    senderkey: this.arrayBufferToBase64(senderEncSymKey),
+                                    receiverIV: this.arrayBufferToBase64(receiverEncIv),
+                                    senderIV: this.arrayBufferToBase64(senderEncIv)
+                                }
+                            }
+
+                            this.setProgressBar(unitprecentage * doneParts * 3 + (unitprecentage * 2))
+
+                            let response = await axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
+                            //console.log("chunk " + j + " of file " + selectedFile.name + "has been sent succesfully!")
+                            //console.log(response);
+
+                            // to be included in we send to server when the part number is > 0
+                            var selectedFileID = response.data.fileID
+                        }catch(error){
+                            console.log(error)
+                            throw error
                         }
-                    } 
-                    else {
-                        toServer = {
-                            fileID: selectedFileID,
-                            data: new Blob([chunkEnc]),
-                            totalParts: nbChunks,
-                            partNumber: j,
-                            receiverID: receiverID.data.userId,
-                            name: selectedFile.name,
-                            type: selectedFile.type || selectedFile.type.length > 0 ? selectedFile.type : "text/plain",
-                            size: selectedFile.size,
-                            receiverkey: this.arrayBufferToBase64(receiverEncSymKey),
-                            senderkey: this.arrayBufferToBase64(senderEncSymKey),
-                            receiverIV: this.arrayBufferToBase64(receiverEncIv),
-                            senderIV: this.arrayBufferToBase64(senderEncIv)
-                        }
+                        this.setProgressBar(unitprecentage * doneParts * 3 + (unitprecentage * 3))
+                        doneParts++
                     }
 
-                    this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 4))
-
-                    try {
-                        let response = await axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
-                        console.log("chunk " + j + " of file " + selectedFile.name + "has been sent succesfully!")
-                        console.log(response);
-                        let action = {
-                            message: "Le fichier " + selectedFile.name + " a bien été envoyé",
-                            class: "success"
-                        }
-                        this.actions.push(action)
-                        let view = this
-                        setTimeout(() => { view.actions.splice(view.actions.indexOf(action), 1) }, 8000)
-
-                        // to be included in we send to server when the part number is > 0
-                        var selectedFileID = response.data.fileID
-
-                    } catch (error) {
-                        console.log(error)
-                        let action = {
-                            message: "Erreur lors de l'envoi du fichier " + selectedFile.name + ", veuillez recommencer !",
-                            class: "error"
-                        }
-                        this.actions.push(action)
-                        let view = this
-                        setTimeout(() => { view.actions.splice(view.actions.indexOf(action), 1) }, 20000)
+                    let action = {
+                        message: "Le fichier " + selectedFile.name + " a bien été envoyé",
+                        class: "success"
                     }
+                    this.actions.push(action)
+                    let view = this
+                    setTimeout(() => { view.actions.splice(view.actions.indexOf(action), 1) }, 8000)
+
+                }catch (error) {
+                    let action = {
+                        message: "Erreur lors de l'envoi du fichier " + selectedFile.name + ", veuillez recommencer !",
+                        class: "error"
+                    }
+                    this.actions.push(action)
+                    let view = this
+                    setTimeout(() => { view.actions.splice(view.actions.indexOf(action), 1) }, 20000)
                 }
-
-                this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 3))
-                console.log("Encryption done !")
-                
-                
             }
             document.getElementById("fileInput").value = ""
             this.receiverEmail = ""
             this.progress = false
+            this.$forceUpdate()
         },
-
-
-        // testStream: async function () {
-        //     const file = document.getElementById("fileInput").files[0]
-        //     var fileAB = await file.arrayBuffer()
-
-        //     const nbChunks = Math.ceil((fileAB.byteLength / 2 ** 20) / 64)
-        //     console.log("total number of chuncks")
-        //     console.log(nbChunks)
-
-        //     const chunkSize = 64 * (2 ** 20)  // in octets (= 64 Mo) 
-
-        
-
-        //     // start stream 
-            
-            
-        //     const fileStream = streamSaver.createWriteStream(file.name, {
-        //         size: file.size, // (optional filesize) Will show progress
-        //         writableStrategy: undefined, // (optional)
-        //         readableStrategy: undefined  // (optional)
-        //     })
-
-        //     const writer = fileStream.getWriter()
-
-        //     /***** encryp each file chunk (with different iv but same aes key) *****/
-        //     for (let i = 0; i < nbChunks; i++) {
-        //         // the current chuck to enc
-        //         let chunkPlain = fileAB.slice(i * chunkSize, i * chunkSize + chunkSize);
-        //         console.log("the current chunk to encrypt")
-        //         console.log(chunkPlain)
-                
-        //         writer.write(new Uint8Array(chunkPlain))
-                
-        //     }
-        //     writer.close()
-        // },
 
         mergeArrayBuffers: function (ab1, ab2) {
             var tmp = new Uint8Array(ab1.byteLength + ab2.byteLength);
@@ -442,33 +401,30 @@ export default {
             return new Uint8Array(this.base64ToArrayBuffer(hash.slice(0, strIV.length)))
         },
 
-        CheckContact : function (){
-
-            this.infos.forEach(element => {
+        checkContact : function (){
+            this.email_contact = []
+            for(var i = 0; i < this.infos.length; i++){
                 /*show sender or receiver if it is not the current person  ->         
                 info.other = email of the receiver */
+                let element = this.infos[i]
 
                 // show email of sender if email of receiver = email of person 
-
                 if (element.other === this.$store.getters.user.email){
                     // test if what the person search is in the email 
-                    if (element.sender.includes(this.email_search)){
+                    if (element.sender.includes(this.receiverEmail)){
                         this.email_contact.push(element.sender)
                     } 
                 } 
                 // show email of receiver if email of sender = email of person
                 else {
                     // test if what the person search is in the email 
-                    if (element.other.includes(this.email_search)){
+                    if (element.other.includes(this.receiverEmail)){
                         this.email_contact.push(element.other)
                     } 
                 }
-            })
+            }
 
             this.filteredArray = this.removeDuplicates(this.email_contact)
-            console.log(this.filteredArray);
-
-            
         }, 
 
         removeDuplicates : function (tab) {
@@ -514,7 +470,7 @@ export default {
     margin: 100px 100px;
     box-shadow: 0 15px 25px #C1C1C1;
     background-color: rgb(248, 248, 248);
-    margin-bottom: 18% ;
+    margin-bottom: 20px;
 }
 
 .user-box{

@@ -25,7 +25,7 @@
                         <td>{{formatSize(info.size)}}</td>
                         <td>{{formatDateTime(info.datedeposite)}}</td>
 
-                        <td><button class="btn" @click="testStream(info.fileID)"> <i class="fa-solid fa-download" id="btn-logo"></i> </button></td>
+                        <td><button class="btn" @click="downloadFile(info.fileID)"> <i class="fa-solid fa-download" id="btn-logo"></i> </button></td>
                         <td><button class="btn" @click="deleteFile(info.fileID)"><i class="fa-solid fa-minus" id="btn-logo"></i></button></td>
 
                     </tr>
@@ -83,161 +83,107 @@ export default {
             return -1
         },
 
-        // function to download file : fetch the data, decrypt it, and convert it back to a file (blob)
         downloadFile: async function (fileID) {
-            console.log("j'ai cliqué sur le bouton télécharger")
-            const userPassword = this.$store.getters.user.pwd
-            const userToDecRsaPrivSaltStr = this.$store.getters.user.salt  // string type
-            const userToDecRsaPrivIvStr = this.$store.getters.user.iv  // string type
-            const userRsaPrivateKeyStr = this.$store.getters.user.privateKey   // string type
+            try{
+                //console.log("j'ai cliqué sur le bouton télécharger")
+                const userPassword = this.$store.getters.user.pwd
+                const userToDecRsaPrivSaltStr = this.$store.getters.user.salt  // string type
+                const userToDecRsaPrivIvStr = this.$store.getters.user.iv  // string type
+                const userRsaPrivateKeyStr = this.$store.getters.user.privateKey   // string type
 
-            const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID }, { headers: { token: this.$store.getters.token } } )
-            // the file to decrypt
-            const dataFromServerFile = await axios.post("http://localhost:5000/file/download", { fileID: fileID, file: true }, { headers: { token: this.$store.getters.token }, responseType: "blob" } )
-            const dataToDecryptAB = await dataFromServerFile.data.arrayBuffer()
-            
-            const fileAesKeyStr = dataFromServer.data.publickey  // string type
-            const fileIvStr = dataFromServer.data.iv // string type
-            const fileType = dataFromServer.data.type  // string type 
-            const fileName = dataFromServer.data.name  // string type
+                // ASK THINGS ABOUT PART 0 OF THE FILE
+                const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID, partNumber: 0 }, { headers: { token: this.$store.getters.token } })
 
-            // convert everything from string to ArrayBuffer
-            const userToDecRsaPrivSaltAB = this.base64ToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
-            const userToDecRsaPrivIvAB = this.base64ToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
-            const userRsaPrivateKeyAB = this.base64ToArrayBuffer(userRsaPrivateKeyStr)
-            const fileAesKeyAB = this.base64ToArrayBuffer(fileAesKeyStr)
-            const fileIvAB = this.base64ToArrayBuffer(fileIvStr)
+                const fileAesKeyStr = dataFromServer.data.aeskey  // string type
+                
+                // const fileType = dataFromServer.data.type  // string type 
+                const fileName = dataFromServer.data.name  // string type
+                const fileSize = dataFromServer.data.size
+                var totalParts = dataFromServer.data.totalParts
 
-            // convert salt and IV back to uint8array
-            const userToDecRsaPrivSaltUint8Array = new Uint8Array(userToDecRsaPrivSaltAB) 
-            const userToDecRsaPrivIvUint8Array = new Uint8Array(userToDecRsaPrivIvAB)
+                // convert everything from string to ArrayBuffer
+                //console.log()
+                const userToDecRsaPrivSaltAB = this.base64ToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
+                const userToDecRsaPrivIvAB = this.base64ToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
+                const userRsaPrivateKeyAB = this.base64ToArrayBuffer(userRsaPrivateKeyStr)
+                const fileAesKeyAB = this.base64ToArrayBuffer(fileAesKeyStr)
+                
 
-            console.log("1")
-            // reconstruction of the AES sym key with the userpassword the iv and the salt
-            const keyMaterial = await this.aesKeyMaterial(userPassword);
-            const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltUint8Array);
+                // convert salt and IV back to uint8array
+                const userToDecRsaPrivSaltUint8Array = new Uint8Array(userToDecRsaPrivSaltAB)
+                const userToDecRsaPrivIvUint8Array = new Uint8Array(userToDecRsaPrivIvAB)
 
-            console.log("2")
-            // decryption of the RSA private key 
-            const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvUint8Array, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
+                // reconstruction of the AES sym key with the userpassword the iv and the salt
+                const keyMaterial = await this.aesKeyMaterial(userPassword);
+                const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltUint8Array);
 
-            console.log("3")
-            // import the RSA private key to CryptoKey type 
-            const rsaPrivateKeyCryptoKey = await this.importRsaPrivateKey(rsaPrivateKeyPlain)
+                // decryption of the RSA private key 
+                const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvUint8Array, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
 
-            console.log("4")
-            // decryption of the AES sym key (used to decrypt the file) and import it to CryptoKey
-            const fileAesKeyABPlain = await this.rsaDecrypt(fileAesKeyAB, rsaPrivateKeyCryptoKey)
-            const fileAesKeyCryptoKey = await this.importAesKey(fileAesKeyABPlain)
-            
-            console.log("5")
-            // decryption of the IV used to decrypt the file
-            const fileIvPlain = await this.rsaDecrypt(fileIvAB, rsaPrivateKeyCryptoKey)  // returns an ArrayBuffer
-            // IV back to uint8array
-            const fileIvPlainUint8Array = new Uint8Array(fileIvPlain)
+                // import the RSA private key to CryptoKey type 
+                const rsaPrivateKeyCryptoKey = await this.importRsaPrivateKey(rsaPrivateKeyPlain)
 
-            console.log("6")
-            /*** decryption of the file ***/
-            const filePlainAB = await this.aesDecryptFile(fileIvPlainUint8Array, fileAesKeyCryptoKey, dataToDecryptAB)  // we now have the ArrayBuffer of the file!
-            // this.aesDecryptFile() returns 1 if there's an error 
+                // decryption of the AES sym key (used to decrypt the file) and import it to CryptoKey
+                const fileAesKeyABPlain = await this.rsaDecrypt(fileAesKeyAB, rsaPrivateKeyCryptoKey)
+                const fileAesKeyCryptoKey = await this.importAesKey(fileAesKeyABPlain)
 
-            console.log("7, maintenant on va procéder au téléchagement du fichier")
 
-            /*** download file to computer ***/
-            if (fileAesKeyAB == 1) {
-                alert("File decryption failed, ask sender to resend file")
-                return 
+                /***** start the stream *****/
+                const fileStream = streamSaver.createWriteStream(fileName, {
+                    size: fileSize, // (optional filesize) Will show progress
+                })
+
+                const writer = fileStream.getWriter()
+
+                try{
+                    for (let i = 0; i < totalParts; i++) {
+                        console.log(1)
+                        // info about the chunk to decrypt 
+                        let dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID, partNumber: i }, { headers: { token: this.$store.getters.token } })
+                        console.log(2)
+                        // the file to decrypt
+                        let dataFromServerFile = await axios.post("http://localhost:5000/file/download", { fileID: fileID, file: true, partNumber: i }, { headers: { token: this.$store.getters.token }, responseType: "blob" })
+                        console.log(3)
+                        let chunkToDecryptAB = await dataFromServerFile.data.arrayBuffer()
+                        console.log(4)
+
+                        //console.log("les données que je reçois")
+                        //console.log(dataFromServer)
+
+                        let chunkIvStr = dataFromServer.data.iv // string type
+                        console.log(5)
+                        //console.log("IV-------------")
+                        //console.log(chunkIvStr)
+                        let chunkIvAB = this.base64ToArrayBuffer(chunkIvStr)
+                        console.log(6)
+                        //console.log(chunkIvAB)
+
+                        // decryption of the IV used to decrypt the file
+                        let chunkIvPlain = await this.rsaDecrypt(chunkIvAB, rsaPrivateKeyCryptoKey)  // returns an ArrayBuffer
+                        console.log(7)
+                        // IV back to uint8array
+                        let chunkIvPlainUint8Array = new Uint8Array(chunkIvPlain)
+                        console.log(8)
+
+                        /*** decryption of the file ***/
+                        //console.log("decryption of chunk " + i + " started!")
+                        let chunkPlain = await this.aesDecryptFile(chunkIvPlainUint8Array, fileAesKeyCryptoKey, chunkToDecryptAB)  // we now have the ArrayBuffer of the file!
+                        console.log(9)
+                        //console.log("decryption of chunk " + i + " ended!")
+
+                        writer.write(new Uint8Array(chunkPlain))
+                        console.log(10)
+                    }
+                }catch(error){
+                    writer.abort()
+                    throw error
+                }
+                writer.close()
+            //console.log("decryption of the whole file completed!")
+            }catch(error) {
+                console.log(error)
+                alert("Une erreur est survenue lors du téléchargement du fichier.")
             }
-            
-            this.downloadBlob(filePlainAB, fileType, fileName) // téléchargement du fichier
-        },
-
-
-
-        testStream: async function (fileID) {
-            console.log("j'ai cliqué sur le bouton télécharger")
-            const userPassword = this.$store.getters.user.pwd
-            const userToDecRsaPrivSaltStr = this.$store.getters.user.salt  // string type
-            const userToDecRsaPrivIvStr = this.$store.getters.user.iv  // string type
-            const userRsaPrivateKeyStr = this.$store.getters.user.privateKey   // string type
-
-            // ASK THINGS ABOUT PART 0 OF THE FILE
-            const dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID, partNumber: 0 }, { headers: { token: this.$store.getters.token } })
-
-            const fileAesKeyStr = dataFromServer.data.aeskey  // string type
-            
-            // const fileType = dataFromServer.data.type  // string type 
-            const fileName = dataFromServer.data.name  // string type
-            const fileSize = dataFromServer.data.size
-            var totalParts = dataFromServer.data.totalParts
-
-            // convert everything from string to ArrayBuffer
-            console.log()
-            const userToDecRsaPrivSaltAB = this.base64ToArrayBuffer(userToDecRsaPrivSaltStr)  // we might need to convert that back to uint8array
-            const userToDecRsaPrivIvAB = this.base64ToArrayBuffer(userToDecRsaPrivIvStr)  // we might need to convert that back to uint8array
-            const userRsaPrivateKeyAB = this.base64ToArrayBuffer(userRsaPrivateKeyStr)
-            const fileAesKeyAB = this.base64ToArrayBuffer(fileAesKeyStr)
-            
-
-            // convert salt and IV back to uint8array
-            const userToDecRsaPrivSaltUint8Array = new Uint8Array(userToDecRsaPrivSaltAB)
-            const userToDecRsaPrivIvUint8Array = new Uint8Array(userToDecRsaPrivIvAB)
-
-            // reconstruction of the AES sym key with the userpassword the iv and the salt
-            const keyMaterial = await this.aesKeyMaterial(userPassword);
-            const aesKeyToDecryptRsaCryptoKey = await this.aesKey(keyMaterial, userToDecRsaPrivSaltUint8Array);
-
-            // decryption of the RSA private key 
-            const rsaPrivateKeyPlain = await this.aesDecryptRsaPrivateKey(userToDecRsaPrivIvUint8Array, aesKeyToDecryptRsaCryptoKey, userRsaPrivateKeyAB)
-
-            // import the RSA private key to CryptoKey type 
-            const rsaPrivateKeyCryptoKey = await this.importRsaPrivateKey(rsaPrivateKeyPlain)
-
-            // decryption of the AES sym key (used to decrypt the file) and import it to CryptoKey
-            const fileAesKeyABPlain = await this.rsaDecrypt(fileAesKeyAB, rsaPrivateKeyCryptoKey)
-            const fileAesKeyCryptoKey = await this.importAesKey(fileAesKeyABPlain)
-
-
-            /***** start the stream *****/
-            const fileStream = streamSaver.createWriteStream(fileName, {
-                size: fileSize, // (optional filesize) Will show progress
-            })
-
-            const writer = fileStream.getWriter()
-
-            for (let i = 0; i < totalParts; i++) {
-                // info about the chunk to decrypt 
-                let dataFromServer = await axios.post("http://localhost:5000/file/download", { fileID: fileID, partNumber: i }, { headers: { token: this.$store.getters.token } })
-                // the file to decrypt
-                let dataFromServerFile = await axios.post("http://localhost:5000/file/download", { fileID: fileID, file: true, partNumber: i }, { headers: { token: this.$store.getters.token }, responseType: "blob" })
-                let chunkToDecryptAB = await dataFromServerFile.data.arrayBuffer()
-
-                console.log("les données que je reçois")
-                console.log(dataFromServer)
-
-                let chunkIvStr = dataFromServer.data.iv // string type
-                console.log("IV-------------")
-                console.log(chunkIvStr)
-                let chunkIvAB = this.base64ToArrayBuffer(chunkIvStr)
-                console.log(chunkIvAB)
-
-                // decryption of the IV used to decrypt the file
-                let chunkIvPlain = await this.rsaDecrypt(chunkIvAB, rsaPrivateKeyCryptoKey)  // returns an ArrayBuffer
-                // IV back to uint8array
-                let chunkIvPlainUint8Array = new Uint8Array(chunkIvPlain)
-
-                /*** decryption of the file ***/
-                console.log("decryption of chunk " + i + " started!")
-                let chunkPlain = await this.aesDecryptFile(chunkIvPlainUint8Array, fileAesKeyCryptoKey, chunkToDecryptAB)  // we now have the ArrayBuffer of the file!
-                console.log("decryption of chunk " + i + " ended!")
-
-
-                writer.write(new Uint8Array(chunkPlain))
-            }
-
-            writer.close()
-            console.log("decryption of the whole file completed!")
-        
         },
 
         // download ArrayBuffer to file 
