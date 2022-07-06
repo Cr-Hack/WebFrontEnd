@@ -96,80 +96,85 @@ export default {
             this.progress = true
             //alert("j'ai cliqué sur le bouton confirmer")
 
+
+            /***** fetch global data *****/
+            // fetch the receiver's public RSA key (type string)
+            console.log("demande infos au serveur")
+            const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
+            const resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
+            const receiverPublicKeyStr = resultsPublicKey.data.publickey
+            const senderPublicKeyStr = this.$store.getters.user.publicKey
+            console.log("demande infos au serveur fin")
+
+            // convert the string to ArrayBuffer
+            const receiverPublicKeyAB = this.base64ToArrayBuffer(receiverPublicKeyStr)
+            const senderPublicKeyAB = this.base64ToArrayBuffer(senderPublicKeyStr)
+            // convert the ArrayBuffer to CryptoKey (with the importKey function)
+            const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
+            const senderPubKeyCryptoKey = await this.importPubKey(senderPublicKeyAB)
+
+
             // files is an array of files 
             const files = document.getElementById("fileInput").files
-            var unitprecentage = 100/(files.length * 4)
-            var selectedFile 
+
+            var unitprecentage = 100 / (files.length * 4)
+            var selectedFile
 
             for (let i = 0; i < files.length; i++) {
                 this.setProgressBar(unitprecentage * i * 4)
                 selectedFile = files[i]
 
-                console.log(selectedFile.type)
-                console.log(selectedFile.size)
-                console.log(selectedFile.name)
+                var fileAB = await selectedFile.arrayBuffer()  // convert the file to an arraybuffer
 
-                console.log(selectedFile)
-                console.log(typeof (selectedFile))
-                console.log(selectedFile.text())
-
-                var arrayBuf = await selectedFile.arrayBuffer()  // convert the file to an arraybuffer
-
-                // AES key and IV
-                const symKey = await this.aesKeyGeneration() // return an CryptoKey type
-                const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
+                // AES key
+                const symKey = await this.aesKeyGeneration()  // return an CryptoKey type qui encrypt the whole file 
 
                 console.log("Encrypting file ....")
                 this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 1))
 
-                // file encryption 
-                var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
+
+                /*
+                We are going to chunk the file to size of 64 Mo 
+                */
+                const nbchunks = Math.ceil((fileAB.byteLength / 2**20) / 64)
+                console.log("total number of chuncks")
+                console.log(nbchunks)
+
+                // the initilising IV 
+                const iv0 = this.uint8ArrayToArrayBuffer(window.crypto.getRandomValues(new Uint8Array(12)))  // a new IV for each section of the file
+
+                // encrypted file with all chunks
+                var encryptedFile = new ArrayBuffer()
+
+                /***** encryp each file chunk (with different iv but same aes key) *****/
+                for (let i = 0; i < nbchunks; i++) {
+                    let ivchunk = this.incrementIv(iv0, i)
+
+                    // the current chuck to enc
+                    let chunkPlain = fileAB.slice(i, i + 64 * 2**10);
+
+                    // encrypt the current chunk 
+                    var chunkEnc = await this.aesEncryptFileChunk(chunkPlain, ivchunk, symKey)
+                    console.log("current chunk encrypted")
+
+                    // let's stick the current chunk to the previous sections
+                    this.mergeArrayBuffers(encryptedFile, chunkEnc)
+                    console.log("cunrent encrypted chunk merged")
+                }
 
                 this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 3))
-
                 console.log("Encryption done !")
-
-                /***** AES symmetric key encryption with the RSA public key of the receiver AND the sender *****/
-                // fetch the receiver's public RSA key (type string)
-                const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
-                const resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
-                const receiverPublicKeyStr = resultsPublicKey.data.publickey
-                const senderPublicKeyStr = this.$store.getters.user.publicKey
-
-                // convert the string to ArrayBuffer
-                const receiverPublicKeyAB = this.base64ToArrayBuffer(receiverPublicKeyStr)
-                const senderPublicKeyAB = this.base64ToArrayBuffer(senderPublicKeyStr)
-
-                // convert the ArrayBuffer to CryptoKey (with the importKey function)
-                const receiverPubKeyCryptoKey = await this.importPubKey(receiverPublicKeyAB)  // function to implement
-                const senderPubKeyCryptoKey = await this.importPubKey(senderPublicKeyAB)
-
+                
                 // convert the AES sym key (used to encrypt file) from CryptoKey to ArrayBuffer (export)
                 const symKeyAB = await window.crypto.subtle.exportKey("raw", symKey)  // export to an ArrayBuffer type
 
                 // encrypt the aes sym key with the sender and receiver public key
-                const receiverEncSymKey = await this.rsaEncrypt(symKeyAB, receiverPubKeyCryptoKey)  // returns an arraybuffer
-                const senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
+                var receiverEncSymKey = await this.rsaEncrypt(symKeyAB, receiverPubKeyCryptoKey)  // returns an arraybuffer
+                var senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
 
-
-                /***** init vector encryption for sender and receiver *****/
-                // convert uint8array to arraybuffer
-                const ivArrayBuf = this.uint8ArrayToArrayBuffer(initVector)
-
-                // encrypt the IVs with RSA public keys
-                const receiverEncIv = await this.rsaEncrypt(ivArrayBuf, receiverPubKeyCryptoKey)
-                const senderEncIv = await this.rsaEncrypt(ivArrayBuf, senderPubKeyCryptoKey)
-
-                console.log("longueur de la clé symétrique chiffrée du fichier pour récepteur et envoyeur")
-                console.log(this.arrayBufferToBase64(receiverEncSymKey))
-                console.log(this.arrayBufferToBase64(senderEncSymKey))
-                console.log(new Uint8Array(senderEncSymKey))
-
-                console.log("longueur du vecteur d'init")
-                console.log(this.arrayBufferToBase64(receiverEncIv))
-                console.log(this.arrayBufferToBase64(senderEncIv))
-
-                //console.log("DATA SENDED !!! " + this.arrayBufferToBase64(encryptedFile))
+                // encryption of the initial IV with RSA public keys
+                var receiverEncIv = await this.rsaEncrypt(iv0, receiverPubKeyCryptoKey)
+                var senderEncIv = await this.rsaEncrypt(iv0, senderPubKeyCryptoKey)
 
                 const toServer = {
                     //data: this.arrayBufferToBase64ingForFiles(encryptedFile),
@@ -183,14 +188,6 @@ export default {
                     receiverIV: this.arrayBufferToBase64(receiverEncIv),
                     senderIV: this.arrayBufferToBase64(senderEncIv)
                 }
-
-                console.log("the encrypted file in string")
-                //console.log(encryptedFile)
-                //console.log(this.arrayBufferToBase64(encryptedFile))
-                console.log("the encrypted receiver IV for file for file decryption in string")
-                console.log(this.arrayBufferToBase64(receiverEncIv))
-                console.log("the encrypted receiver aes key for file decryption in string")
-                console.log(this.arrayBufferToBase64(receiverEncSymKey))
 
                 try{
                     let response = await axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
@@ -220,6 +217,13 @@ export default {
             this.progress = false
         },
 
+        mergeArrayBuffers: function (ab1, ab2) {
+            var tmp = new Uint8Array(ab1.byteLength + ab2.byteLength);
+            tmp.set(new Uint8Array(ab1), 0);
+            tmp.set(new Uint8Array(ab2), ab1.byteLength);
+            return tmp.buffer;
+        },
+
         aesKeyGeneration: async function () {
             try {
                 return await window.crypto.subtle.generateKey(
@@ -235,7 +239,7 @@ export default {
             }
         }, 
 
-        encryptFile: async function (filePlain, initVector, symKey) {  // filePlain is the file to encrypt, (type = arraybuffer)
+        aesEncryptFileChunk: async function (filePlain, initVector, symKey) {  // filePlain is the file to encrypt, (type = arraybuffer)
             try {
                 return await window.crypto.subtle.encrypt(
                     {
@@ -310,7 +314,7 @@ export default {
             this.progress_style = "width: " + percentage + "%"
         },
 
-        hashencryption : async function (message1){
+        hashencryption: async function (message1){
             const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
             const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
             const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
@@ -318,7 +322,7 @@ export default {
             return hashHex_1 ;
         },
 
-        increment: async function (initVector, id) {
+        incrementIv: async function (initVector, id) {
             let strIV = this.arrayBufferToBase64(initVector)
             let hash = await this.hashencryption(strIV + id)
             return new Uint8Array(this.base64ToArrayBuffer(hash.slice(0, strIV.length)))
