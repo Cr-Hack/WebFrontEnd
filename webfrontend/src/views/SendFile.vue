@@ -63,7 +63,8 @@ export default {
         };
         
         const selectedFile = () => {
-            dropzoneFile.value = document.querySelector('.dropzoneFile').files[0];
+            dropzoneFile.value = ""
+            dropzoneFile.value = document.querySelector('.dropzoneFile').files;
             for(var i = 0; i < document.querySelector('.dropzoneFile').files.length; i++){
                     console.log(document.querySelector('.dropzoneFile').files[i])
             }
