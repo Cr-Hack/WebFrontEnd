@@ -98,7 +98,7 @@ export default {
 
             // files is an array of files 
             const files = document.getElementById("fileInput").files
-             var unitprecentage = 100/(files.length * 4)
+            var unitprecentage = 100/(files.length * 4)
             var selectedFile 
 
             for (let i = 0; i < files.length; i++) {
@@ -308,7 +308,21 @@ export default {
 
         setProgressBar: function (percentage) {
             this.progress_style = "width: " + percentage + "%"
-        }
+        },
+
+        hashencryption : async function (message1){
+            const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
+            const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
+            const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
+            const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+            return hashHex_1 ;
+        },
+
+        increment: async function (initVector, id) {
+            let strIV = this.arrayBufferToBase64(initVector)
+            let hash = await this.hashencryption(strIV + id)
+            return new Uint8Array(this.base64ToArrayBuffer(hash.slice(0, strIV.length)))
+        },
     }        
 }
 </script>

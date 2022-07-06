@@ -22,7 +22,7 @@
             <button class="input-group-btn" type="reset">Reset</button>
 
         </form>
-
+        <button class="input-group-btn" type="" @click="testfunc()">Test</button>
     </div>
 </template>
 
@@ -216,14 +216,34 @@ export default {
         }, 
 
         hashencryption : async function (message1){
-
             const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
             const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
             const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
             const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
-            console.log(hashHex_1);
             return hashHex_1 ;
-        }, 
+        },
+
+
+        // increment: async function (initVector, id) {
+        //     let strIV = this.arrayBufferToBase64(initVector)
+        //     let hash = await this.hashencryption(strIV + id)
+        //     return this.base64ToArrayBuffer(hash.slice(0, strIV.length))
+        // },
+
+        // testfunc: async function () {
+        //     var initVector = window.crypto.getRandomValues(new Uint8Array(12))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 1)))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 2)))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 3)))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 4)))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 5)))
+        //     console.log("repetition !!!")
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 1)))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 2)))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 3)))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 4)))
+        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 5)))
+        // }
 
         /*sendEmailInsc() {
 
