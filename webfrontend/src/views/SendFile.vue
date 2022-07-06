@@ -3,7 +3,7 @@
         <nav-bar/>
         <div class="send-box">
             <h2 id="title">Formulaire d'envoi chiffré</h2>
-            <form class="formy" method="post" @submit.prevent="handleFile()">
+            <form class="formy" method="post" @submit.prevent="handleFile()" @reset.prevent="deleteInputFile()">
                 <div @dragenter.prevent="toggleActive" 
                 @dragleave.prevent="toggleActive" @dragover.prevent
                 @drop.prevent="drop"
@@ -13,7 +13,7 @@
                     <label for="fileInput">
                         <h3>Seléctionner votre fichier (.pdf, .jpg ou .png)</h3> 
                         <i class="fa-solid fa-file-circle-plus fa-2xl"></i>
-                        <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple>
+                        <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple="multiple">
                     </label>
                 </div>
                 <div class="file-info" v-for="(file, index) of dropzoneFile" :key="index">
@@ -24,7 +24,7 @@
                 </div>
                 <div class="btn">
                     <button type="submit" id="confirm" class="btn_l">Confirmer</button>
-                    <button type="submit" id="del" class="btn_l">Annuler</button>
+                    <button type="reset" id="del" class="btn_l">Annuler</button>
                 </div>
                 <div v-if="progress" class="progress-wrapper">
                     <div id="progress" class="progress" :style="progress_style"></div>
@@ -63,8 +63,11 @@ export default {
         };
         
         const selectedFile = () => {
-            dropzoneFile.value = ""
-            dropzoneFile.value = document.getElementById('fileInput').files;
+            dropzoneFile.value = document.querySelector('.dropzoneFile').files[0];
+            for(var i = 0; i < document.querySelector('.dropzoneFile').files.length; i++){
+                    console.log(document.querySelector('.dropzoneFile').files[i])
+            }
+            
         }
         return {active, toggleActive, dropzoneFile, drop, selectedFile};
     },
@@ -80,11 +83,9 @@ export default {
         }
     }, 
     methods:{
-        showPreview(event){
-            if(event.target.files.length > 0){
-                var src = URL.createObjectURL(event.target.files[0]);
-                var preview = document.getElementById("file-ip-1-preview");
-                preview.src = src;
+        deleteInputFile: function(){
+            for(var i = 0; i < document.getElementById("fileInput").files.length; i++){
+                console.log("delete file here")
             }
         },
 
@@ -483,11 +484,11 @@ label{
 }
 
 .success {
-    background-color: #9afa5899;
+    background-color: #1F9D1B;
 }
 
 .error {
-    background-color: #ff9f9f;
+    background-color: #F3602B;
 }
 
 .timebar,.timebar-filled{
@@ -495,24 +496,24 @@ label{
 }
 
 .success+.timebar{
-    background-color: #00d8049e;
+    background-color: #1C8E18;
     animation: 8.5s durationBar;
     flex-shrink: 1;
 }
 .success+.timebar+.timebar-filled {
-    background-color: #9afa5899;
+    background-color: #1F9D1B;
     flex-basis: 0;
     flex-grow: 1;
 }
 
 .error+.timebar{
-    background-color: #ff7272;
+    background-color: #cc3f0c;
     animation: 20.5s durationBar;
     flex-shrink: 1;
 }
 
 .error+.timebar+.timebar-filled {
-    background-color: #ff9f9f;
+    background-color: #F3602B;
     flex-basis: 0;
     flex-grow: 1;
 }

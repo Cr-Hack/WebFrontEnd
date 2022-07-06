@@ -12,18 +12,24 @@
                         <th>Taille</th>
                         <th>Date/heure</th>
                         <th style="background-color: var(--red);">Télécharger</th>
+                        <th style="background-color: var(--red);">Supprimer</th>
                     </tr>
                 </thead>
+
                 <tbody>
                     <tr v-for="(info, index) of infos" :key="index">
-                        <td>{{ info.sender }}</td>
-                        <td>{{ info.other == info.sender ? this.$store.getters.user.email : info.other }}</td>
+                        <td>{{info.sender}}</td>
+                        <td>{{info.other == info.sender ? this.$store.getters.user.email : info.other}}</td>
                         <td><i :class="formatType(info.type)"></i></td>
                         <td>{{ info.name }}</td>
-                        <td>{{ formatSize(info.size) }}</td>
-                        <td>{{ formatDateTime(info.datedeposite) }}</td>
+                        <td>{{formatSize(info.size)}}</td>
+                        <td>{{formatDateTime(info.datedeposite)}}</td>
                         <td><button class="btn" @click="downloadFile(info.fileID)"> <i class="fa-solid fa-download" id="btn-logo"></i> </button></td>
+                        <td><button class="btn"><i class="fa-solid fa-minus" id="btn-logo"></i></button></td>
                     </tr>
+                </tbody>
+                <tbody v-if="!emptyTable">
+                    <td colspan="7"><span id="emptyTable"><h2><i class="fa-solid fa-magnifying-glass"></i> I think you have no file...</h2></span></td>
                 </tbody>
             </table>
         </div>
@@ -53,7 +59,7 @@ export default {
                 })
         }, 
 
-        emptyTable: () => {
+        emptyTable: function () {
             if(this.infos.length === 0){
                 return true
             }
@@ -385,9 +391,6 @@ export default {
     font-size: 20px;
 }
 .table-wrapper{
-    display: flex;
-    flex: wrap;
-    justify-content: center;
     margin: 10px 70px 70px;
     box-shadow: 0px 35px 50px rgba(0,0,0,0.2);
     /* max-height: 800px; */
@@ -397,6 +400,12 @@ export default {
 th{
     position: sticky;
     top: 0px;
+}
+
+#emptyTable{
+    color: #a3a3a3;
+    font-style: oblique;
+    font-size: 10px;
 }
 
 button{
@@ -432,7 +441,12 @@ button:hover{
     max-width: 100%;
     white-space: nowrap;
     background-color: white;
+}
 
+@media screen and (max-width:800px) {
+    .table-wrapper{
+        overflow-x: auto;
+    }
 }
 
 .style-table td, .style-table th{

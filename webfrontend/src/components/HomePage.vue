@@ -25,7 +25,7 @@
                 
                 <div class="section" id="s3">
                     <i class="fa-solid fa-people-group fa-3x" id="chiffrement"></i>
-                    <h2>Pourquoi-nous ?</h2>
+                    <h2>Pourquoi nous ?</h2>
                     <p>Nous sommes 6 étudiants d’EFREI PARIS, une école d’ingénieur informatique située à Villejuif. Dans le cadre du MasterCamp, un mois où nous sommes plongés dans nos filières respectives, nous avons reçu de la part de GOVI un appel d’offre. Il consistait à établir une plateforme permettant le partage de fichier chiffrés de bout en bout. 
                     Etant des aspirants en cybersécurité, la protection de la vie privée et surtout des données médicales est pour nous primordiale. Pour ce projet nous avons une ligne directrice : personne ne doit avoir accès à VOS informations à part vous et les personnes que vous avez choisies. 
                     Nous croyons en un monde où la vie privée sera la priorité de tout le monde comme cela l’est pour nous) Alors, ce projet est pour nous un pas en avant vers ce monde meilleur que nous voulons tous.

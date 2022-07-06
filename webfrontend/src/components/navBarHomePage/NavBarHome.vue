@@ -33,6 +33,7 @@ export default {
     flex: 1;
     padding: 10px;
     color: var(--red);
+    transition:  0.3s ease;
 }
 
 .txt:hover{

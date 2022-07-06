@@ -83,7 +83,7 @@ const routes = [{
         component: two_auth,
         meta: {
             title: "Page de 2FA",
-            requiresAuth: false
+            requiresAuth: true
         }
     },
 
