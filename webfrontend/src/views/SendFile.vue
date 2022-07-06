@@ -49,7 +49,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="email in email_contact" :key="email">
+                    <tr v-for="email in filteredArray" :key="email">
                         <td>{{email}}</td>
                     </tr>
                 </tbody>
@@ -465,21 +465,20 @@ export default {
                 }
             })
 
-            // get rid of double 
-            /*this.email_contact.forEach(ele =>{
-                if 
-            })*/
-            /*console.log(this.infos)
-            console.log(this.email_contact)
-            
+            this.filteredArray = this.removeDuplicates(this.email_contact)
+            console.log(this.filteredArray);
 
-            for (var i = 0; i < this.email_contact.length; i++) {
-                if (this.email_contact[i]== this.email_contact[i]){
-                    this.email_contact[i]
+            
+        }, 
+
+        removeDuplicates : function (tab) {
+            let unique = {};
+            tab.forEach(function(i) {
+                if(!unique[i]) {
+                unique[i] = true;
                 }
-            }*/
-
-            
+            })
+            return Object.keys(unique);
         }, 
 
         deleteContacts : function (){
