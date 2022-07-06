@@ -143,17 +143,27 @@ export default {
                 console.log(nbchunks)
 
                 // the initilising IV 
-                const iv0 = this.uint8ArrayToArrayBuffer(window.crypto.getRandomValues(new Uint8Array(12)))  // a new IV for each section of the file
+                const iv0 = window.crypto.getRandomValues(new Uint8Array(12))  // a new IV for each section of the file
 
                 // encrypted file with all chunks
                 var encryptedFile = new ArrayBuffer()
 
+                const chunkSize = 64 * (2 ** 20)  // in octets (= 64 Mo) 
+
                 /***** encryp each file chunk (with different iv but same aes key) *****/
                 for (let i = 0; i < nbchunks; i++) {
-                    let ivchunk = this.incrementIv(iv0, i)
+                    //let ivchunk = this.incrementIv(iv0, i)
+                    let ivchunk = window.crypto.getRandomValues(new Uint8Array(12))
+                    console.log("the iv of the chunk")
+                    console.log(ivchunk)
 
                     // the current chuck to enc
-                    let chunkPlain = fileAB.slice(i, i + 64 * 2**10);
+                    let chunkPlain = fileAB.slice(i * chunkSize, i * chunkSize + chunkSize);
+                    console.log("the current chunk to encrypt")
+                    console.log(chunkPlain)
+
+                    console.log("the aes sym key to encrypt files")
+                    console.log(symKey)
 
                     // encrypt the current chunk 
                     var chunkEnc = await this.aesEncryptFileChunk(chunkPlain, ivchunk, symKey)
@@ -176,8 +186,9 @@ export default {
                 var senderEncSymKey = await this.rsaEncrypt(symKeyAB, senderPubKeyCryptoKey)
 
                 // encryption of the initial IV with RSA public keys
-                var receiverEncIv = await this.rsaEncrypt(iv0, receiverPubKeyCryptoKey)
-                var senderEncIv = await this.rsaEncrypt(iv0, senderPubKeyCryptoKey)
+                const iv0AB = this.uint8ArrayToArrayBuffer(iv0)
+                var receiverEncIv = await this.rsaEncrypt(iv0AB, receiverPubKeyCryptoKey)
+                var senderEncIv = await this.rsaEncrypt(iv0AB, senderPubKeyCryptoKey)
 
                 const toServer = {
                     //data: this.arrayBufferToBase64ingForFiles(encryptedFile),
@@ -326,7 +337,7 @@ export default {
         },
 
         incrementIv: async function (initVector, id) {
-            let strIV = this.arrayBufferToBase64(initVector)
+            let strIV = this.arrayBufferToBase64(this.uint8ArrayToArrayBuffer(initVector))
             let hash = await this.hashencryption(strIV + id)
             return new Uint8Array(this.base64ToArrayBuffer(hash.slice(0, strIV.length)))
         },

@@ -44,7 +44,7 @@ export default {
     components : {NavBar}, 
     data(){
         return{
-        infos : this.created()
+            infos : this.created()
         }
     },
     methods: {
@@ -52,7 +52,6 @@ export default {
             axios.post('http://localhost:5000/file/view', {}, {headers:{token: this.$store.getters.token}})
                 .then((response) => {
                     this.infos = response.data.files
-					console.log(response)
                 })
                 .catch((err) => {
                     console.log(err)
@@ -349,34 +348,40 @@ export default {
         },
 
         formatType: function (type) {
-            let htmlbase = 'icons fa-solid '//<span class="material-icons">'
+            let htmlbase = 'icons fa-solid fa-'//<span class="material-icons">'
             switch (type) {
                 case "application/pdf":
-                    htmlbase += 'fa-file-pdf'
+                    htmlbase += 'file-pdf'
                     break
                 case "application/x-zip-compressed":
-                    htmlbase += 'fa-file-archive'
+                    htmlbase += 'file-archive'
                     break
                 case "application/vnd.oasis.opendocument.spreadsheet":
-                    htmlbase += 'fa-file-excel'
+                    htmlbase += 'file-excel'
                     break
+                case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
+                    htmlbase += 'file-powerpoint'
+                    break
+                case "image/png":
                 case "image/jpeg":
                 case "application/vnd.oasis.opendocument.graphics":
-                    htmlbase += 'fa-image'
+                    htmlbase += 'image'
                     break
                 case "audio/mpeg":
-                    htmlbase += 'fa-volume-high'
+                    htmlbase += 'volume-high'
                     break
                 case "video/mp4":
                 case "video/webm":
-                    htmlbase += 'fa-video'
+                    htmlbase += 'video'
                     break
+                case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
                 case "text/plain":
-                    htmlbase += 'fa-file'
+                case "application/msword":
+                    htmlbase += 'file'
                     break
                 default:
                     console.log(type + " is not defined !")
-                    htmlbase += 'fa-file'
+                    htmlbase += 'file-circle-exclamation'
                     break
             }
             return htmlbase //+ '</span>'

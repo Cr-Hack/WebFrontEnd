@@ -24,7 +24,7 @@
             <button class="input-group-btn" type="reset">Reset</button>
 
         </form>
-        <button class="input-group-btn" type="" @click="testfunc()">Test</button>
+        <!--button class="input-group-btn" type="" @click="testfunc()">Test</button-->
     </div>
 </template>
 
@@ -229,22 +229,49 @@ export default {
         // increment: async function (initVector, id) {
         //     let strIV = this.arrayBufferToBase64(initVector)
         //     let hash = await this.hashencryption(strIV + id)
-        //     return this.base64ToArrayBuffer(hash.slice(0, strIV.length))
+        //     return new Uint8Array(this.base64ToArrayBuffer(hash.slice(0, strIV.length)))
         // },
 
         // testfunc: async function () {
-        //     var initVector = window.crypto.getRandomValues(new Uint8Array(12))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 1)))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 2)))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 3)))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 4)))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 5)))
-        //     console.log("repetition !!!")
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 1)))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 2)))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 3)))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 4)))
-        //     console.log(this.arrayBufferToBase64(await this.increment(initVector, 5)))
+        //     let initVector = window.crypto.getRandomValues(new Uint8Array(12))
+        //     console.log(initVector)
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(window.crypto.getRandomValues(new Uint8Array(12)))
+        //     // console.log(await this.increment(initVector, 1))
+        //     // console.log(await this.increment(initVector, 2))
+        //     // console.log(await this.increment(initVector, 3))
+        //     // console.log(await this.increment(initVector, 4))
+        //     // console.log(await this.increment(initVector, 5))
+        //     // console.log("repetition !!!")
+        //     // console.log(await this.increment(initVector, 1))
+        //     // console.log(await this.increment(initVector, 2))
+        //     // console.log(await this.increment(initVector, 3))
+        //     // console.log(await this.increment(initVector, 4))
+        //     // console.log(await this.increment(initVector, 5))
         // }
 
         /*sendEmailInsc() {
