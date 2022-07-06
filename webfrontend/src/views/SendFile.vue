@@ -480,11 +480,11 @@ label{
 }
 
 .success {
-    background-color: #9afa5899;
+    background-color: #1F9D1B;
 }
 
 .error {
-    background-color: #ff9f9f;
+    background-color: #F3602B;
 }
 
 .timebar,.timebar-filled{
@@ -492,24 +492,24 @@ label{
 }
 
 .success+.timebar{
-    background-color: #00d8049e;
+    background-color: #1C8E18;
     animation: 8.5s durationBar;
     flex-shrink: 1;
 }
 .success+.timebar+.timebar-filled {
-    background-color: #9afa5899;
+    background-color: #1F9D1B;
     flex-basis: 0;
     flex-grow: 1;
 }
 
 .error+.timebar{
-    background-color: #ff7272;
+    background-color: #cc3f0c;
     animation: 20.5s durationBar;
     flex-shrink: 1;
 }
 
 .error+.timebar+.timebar-filled {
-    background-color: #ff9f9f;
+    background-color: #F3602B;
     flex-basis: 0;
     flex-grow: 1;
 }
