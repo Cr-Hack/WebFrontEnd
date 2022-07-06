@@ -16,8 +16,8 @@
                         <input id="fileInput" type="file" required="required" class="dropzoneFile" @change="selectedFile" multiple="multiple">
                     </label>
                 </div>
-                <div class="file-info">
-                    <span id="file">Fichier : {{dropzoneFile.name}}</span>
+                <div class="file-info" v-for="(file, index) of dropzoneFile" :key="index">
+                    <span id="file">Fichier : {{file.name}}</span>
                 </div>
                 <div class="user-box" id="container-dest">
                     <input v-model="receiverEmail" type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
@@ -26,8 +26,20 @@
                     <button type="submit" id="confirm" class="btn_l">Confirmer</button>
                     <button type="reset" id="del" class="btn_l">Annuler</button>
                 </div>
+                <div v-if="progress" class="progress-wrapper">
+                    <div id="progress" class="progress" :style="progress_style"></div>
+                </div>
             </form>
         </div>
+        <ul v-for="(action, index) of actions" :key="index">
+            <li class="item">
+                <div :class="action.class">
+                    {{ action.message }}
+                </div>
+                <div class="timebar"></div>
+                <div class="timebar-filled"></div>
+            </li>
+        </ul>
     </div>
 </template>
 
@@ -44,9 +56,9 @@ export default {
             active.value = !active.value;
         };
         let dropzoneFile = ref("");
-
         const drop = (event) => {
-            dropzoneFile.value = event.dataTransfer.files[0];
+            dropzoneFile.value = ""
+            dropzoneFile.value = event.dataTransfer.files;
             active.value = !active.value;
         };
         
@@ -62,8 +74,12 @@ export default {
 
     data() {
         return {
+            files: [],
             fileToSend: '',
-            receiverEmail: ''
+            receiverEmail: '',
+            actions: [],
+            progress: false,
+            progress_style: "width: 0%"
         }
     }, 
     methods:{
@@ -74,13 +90,20 @@ export default {
         },
 
         handleFile: async function () {
+            if(this.progress){
+                alert("Une opération est déjà en cours.")
+                return
+            }
+            this.progress = true
             //alert("j'ai cliqué sur le bouton confirmer")
 
             // files is an array of files 
             const files = document.getElementById("fileInput").files
+            var unitprecentage = 100/(files.length * 4)
             var selectedFile 
 
             for (let i = 0; i < files.length; i++) {
+                this.setProgressBar(unitprecentage * i * 4)
                 selectedFile = files[i]
 
                 console.log(selectedFile.type)
@@ -98,9 +121,12 @@ export default {
                 const initVector = window.crypto.getRandomValues(new Uint8Array(12))  // initialisation vector generation
 
                 console.log("Encrypting file ....")
+                this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 1))
 
                 // file encryption 
                 var encryptedFile = await this.encryptFile(arrayBuf, initVector, symKey);  // returns an ArrayBuffer
+
+                this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 3))
 
                 console.log("Encryption done !")
 
@@ -167,18 +193,32 @@ export default {
                 console.log("the encrypted receiver aes key for file decryption in string")
                 console.log(this.arrayBufferToBase64(receiverEncSymKey))
 
+                try{
+                    let response = await axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
+                    console.log(response);
+                    let action = {
+                        message: "Le fichier " + selectedFile.name + " a bien été envoyé",
+                        class: "success"
+                    }
+                    this.actions.push(action)
+                    let view = this
+                    setTimeout(() => {view.actions.splice(view.actions.indexOf(action), 1)}, 8000)
+                }catch (error) {
+                    console.log(error)
+                    let action = {
+                        message: "Erreur lors de l'envoi du fichier " + selectedFile.name + ", veuillez recommencer !",
+                        class: "error"
+                    }
+                    this.actions.push(action)
+                    let view = this
+                    setTimeout(() => {view.actions.splice(view.actions.indexOf(action), 1)}, 20000)
+                }
 
-                axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
-                    .then(function (response) {
-                        console.log(response);
-                        alert("votre fichier a bien été envoyé")
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    });
+                this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 4))
             }
-
-            
+            document.getElementById("fileInput").value = ""
+            this.receiverEmail = ""
+            this.progress = false
         },
 
         aesKeyGeneration: async function () {
@@ -253,7 +293,7 @@ export default {
             }
         },
 
-        rsaEncrypt:async function (aesKeyOrIvPlain, rsaPublicKey) {
+        rsaEncrypt: async function (aesKeyOrIvPlain, rsaPublicKey) {
             try {
                 return await window.crypto.subtle.encrypt(
                     {
@@ -265,7 +305,25 @@ export default {
             } catch (err) {
                 console.log("AES key or IV encryotion failed ", err)
             }
-        }
+        },
+
+        setProgressBar: function (percentage) {
+            this.progress_style = "width: " + percentage + "%"
+        },
+
+        hashencryption : async function (message1){
+            const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
+            const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
+            const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
+            const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
+            return hashHex_1 ;
+        },
+
+        increment: async function (initVector, id) {
+            let strIV = this.arrayBufferToBase64(initVector)
+            let hash = await this.hashencryption(strIV + id)
+            return new Uint8Array(this.base64ToArrayBuffer(hash.slice(0, strIV.length)))
+        },
     }        
 }
 </script>
@@ -293,6 +351,7 @@ export default {
     margin: 100px 100px;
     box-shadow: 0 15px 25px #C1C1C1;
     background-color: rgb(248, 248, 248);
+    margin-bottom: 18% ;
 }
 
 .user-box{
@@ -404,6 +463,70 @@ label{
     margin: 0px;
 }
 
+.item {
+    list-style: none;
+    width: auto;
+    box-shadow: 0 15px 25px #C1C1C1;
+    margin: 20px 100px 20px 60px;
+    text-align: left;
+    display: flex;
+    flex-flow: row wrap;
+}
 
+.success,.error {
+    padding: 15px;
+    padding-bottom: 11px;
+    flex-basis: 100%;
+}
+
+.success {
+    background-color: #9afa5899;
+}
+
+.error {
+    background-color: #ff9f9f;
+}
+
+.timebar,.timebar-filled{
+    height: 4px;
+}
+
+.success+.timebar{
+    background-color: #00d8049e;
+    animation: 8.5s durationBar;
+    flex-shrink: 1;
+}
+.success+.timebar+.timebar-filled {
+    background-color: #9afa5899;
+    flex-basis: 0;
+    flex-grow: 1;
+}
+
+.error+.timebar{
+    background-color: #ff7272;
+    animation: 20.5s durationBar;
+    flex-shrink: 1;
+}
+
+.error+.timebar+.timebar-filled {
+    background-color: #ff9f9f;
+    flex-basis: 0;
+    flex-grow: 1;
+}
+
+@-webkit-keyframes durationBar { from { flex-basis: 0%; } to { flex-basis:100%; }  }
+@keyframes durationBar { from { flex-basis: 0%; } to { flex-basis:100%; }  }
+
+.progress-wrapper {
+    width: auto;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border: 1px solid black;
+}
+
+.progress {
+    background-color: #922D50;
+    height: 10px;
+}
 
 </style>

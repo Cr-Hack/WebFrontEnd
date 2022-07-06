@@ -16,13 +16,17 @@ export default {
 </script>
 
 <style>
+
     .footer{
         position: relative;
-        min-height: 460px;
+        bottom: 0;
+        width : 100% ; 
+
     }
+
     footer {
-        position: sticky;
-        top: 100%;
+        /*position: sticky;
+        top: 100%;*/
         background-color: #f7b32b ;
     }
 
@@ -31,6 +35,8 @@ export default {
         color: #922d50;
         font-weight: lighter;
         height: auto;
+        margin : 0% ; 
+        padding : 1% ;
     }
 
 </style>

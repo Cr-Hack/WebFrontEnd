@@ -182,11 +182,10 @@ export default {
         justify-content: space-evenly;
     }
 
-
-
     img{
         margin-top: 50px;
         width: 200px;
     }
+
 
 </style>

@@ -13,6 +13,10 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
+
+    h2{
+        margin-bottom : 38% ; 
+    }
 
 </style>

@@ -1,11 +1,17 @@
 # webfrontend
 
-## Project setup
+## need to install before hand 
+```
+node.js on the computer (for npm command ) 
+Installation of cli : npm install cli
+```
+
+## Project setup : install all modules necessary 
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development
+### Compiles and hot-reloads for development : run the app
 ```
 npm run serve
 ```
