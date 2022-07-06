@@ -25,7 +25,7 @@
                         <td>{{formatSize(info.size)}}</td>
                         <td>{{formatDateTime(info.datedeposite)}}</td>
                         <td><button class="btn" @click="downloadFile(info.fileID)"> <i class="fa-solid fa-download" id="btn-logo"></i> </button></td>
-                        <td><button class="btn" @click="deleteFile(info.fileId)"><i class="fa-solid fa-minus" id="btn-logo"></i></button></td>
+                        <td><button class="btn" @click="deleteFile(info.fileID)"><i class="fa-solid fa-minus" id="btn-logo"></i></button></td>
                     </tr>
                 </tbody>
                 <tbody v-if="!emptyTable">
@@ -71,8 +71,18 @@ export default {
 
         deleteFile: async function(fileID){
             const fileToDelete = await axios.post("http://localhost:5000/file/delete", {fileID: fileID},{ headers: { token: this.$store.getters.token } })
+            let index = this.findIndex(fileID)
+            if(index != -1) this.infos.splice(index, 1)
             console.log(fileToDelete.data)
         },
+
+        findIndex: function(fileID) {
+            for(var i = 0; i < this.infos.length; i++) {
+                if (this.infos[i].fileID == fileID) return i
+            }
+            return -1
+        },
+
         // function to download file : fetch the data, decrypt it, and convert it back to a file (blob)
         downloadFile: async function (fileID) {
             console.log("j'ai cliqué sur le bouton télécharger")
