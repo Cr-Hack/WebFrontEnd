@@ -5,9 +5,6 @@
         <p>{{user_name}}</p>
     </div>
     
-    <div id="resp-menu">
-        <i class="fa-solid fa-bars"></i>
-    </div>
     <div class="nav_link">
         <router-link to="/MainPage">Guide</router-link>
         <router-link to="/seefile">Afficher</router-link>
@@ -30,7 +27,7 @@ export default {
 
     methods:{
         getUser: async function(){
-            this.user_name = this.$store.getters.user.first_name
+            this.user_name = this.$store.getters.user.email
             console.log(this.user_name)
         }
     },
@@ -104,15 +101,15 @@ img{
 }
 
 @media all and (max-width: 500px){
-    #resp-menu{
-        display: block;
-    }
     .nav_link{
         position: relative;
         flex-direction: column;
     }
     nav{
         flex-direction: column;
+    }
+    .router-link-active{
+        border: 1px solid var(--red);
     }
 }
 </style>

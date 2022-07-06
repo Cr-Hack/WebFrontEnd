@@ -17,7 +17,7 @@
                     </label>
                 </div>
                 <div class="file-info" >
-                    Fichier(s) : <span id="file" v-for="(file, index) of dropzoneFile" :key="index">{{file.name}}</span>
+                     Fichier(s) : <span id="file" v-for="(file, index) of dropzoneFile" :key="index">{{file.name}}</span>
                 </div>
                 <div class="user-box" id="container-dest">
                     <input v-model="receiverEmail" type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
