@@ -196,6 +196,7 @@ export default {
                     //let ivchunk = this.incrementIv(iv0, i)
                     let ivChunk = window.crypto.getRandomValues(new Uint8Array(12))
 
+
                     // the current chunck to enc
                     var chunkPlainBlob
                     if (j < nbChunks - 1) {
@@ -216,6 +217,9 @@ export default {
                     const ivChunkAB = this.uint8ArrayToArrayBuffer(ivChunk)
                     var receiverEncIv = await this.rsaEncrypt(ivChunkAB, receiverPubKeyCryptoKey)
                     var senderEncIv = await this.rsaEncrypt(ivChunkAB, senderPubKeyCryptoKey)
+
+                    console.log("IV ----")
+                    console.log(this.arrayBufferToBase64(senderEncIv))
 
                     var toServer
                     if (j === 0) {
@@ -252,12 +256,13 @@ export default {
 
                     this.setProgressBar(unitprecentage * i * 4 + (unitprecentage * 4))
 
+
                     try {
                         let response = await axios.post("http://localhost:5000/file/upload", toServer, { headers: { token: this.$store.getters.token, "Content-Type": "multipart/form-data" } })
                         console.log("chunk " + j + " of file " + selectedFile.name + "has been sent succesfully!")
                         console.log(response);
                         let action = {
-                            message: "Le fichier " + selectedFile.name + " a bien été envoyé",
+                            message: "Le fichier " + selectedFile.name + " a bien été envoyé",  
                             class: "success"
                         }
                         this.actions.push(action)
@@ -288,43 +293,6 @@ export default {
             this.receiverEmail = ""
             this.progress = false
         },
-
-
-        // testStream: async function () {
-        //     const file = document.getElementById("fileInput").files[0]
-        //     var fileAB = await file.arrayBuffer()
-
-        //     const nbChunks = Math.ceil((fileAB.byteLength / 2 ** 20) / 64)
-        //     console.log("total number of chuncks")
-        //     console.log(nbChunks)
-
-        //     const chunkSize = 64 * (2 ** 20)  // in octets (= 64 Mo) 
-
-        
-
-        //     // start stream 
-            
-            
-        //     const fileStream = streamSaver.createWriteStream(file.name, {
-        //         size: file.size, // (optional filesize) Will show progress
-        //         writableStrategy: undefined, // (optional)
-        //         readableStrategy: undefined  // (optional)
-        //     })
-
-        //     const writer = fileStream.getWriter()
-
-        //     /***** encryp each file chunk (with different iv but same aes key) *****/
-        //     for (let i = 0; i < nbChunks; i++) {
-        //         // the current chuck to enc
-        //         let chunkPlain = fileAB.slice(i * chunkSize, i * chunkSize + chunkSize);
-        //         console.log("the current chunk to encrypt")
-        //         console.log(chunkPlain)
-                
-        //         writer.write(new Uint8Array(chunkPlain))
-                
-        //     }
-        //     writer.close()
-        // },
 
         mergeArrayBuffers: function (ab1, ab2) {
             var tmp = new Uint8Array(ab1.byteLength + ab2.byteLength);
