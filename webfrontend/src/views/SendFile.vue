@@ -17,21 +17,21 @@
                     </label>
                 </div>
                 <div class="file-info" >
-                     Fichier(s) : <span id="file" v-for="(file, index) of dropzoneFile" :key="index">{{file.name}}</span>
+                     Fichier(s) : <span id="file" v-for="(file, index) of dropzoneFile" :key="index">{{file.name}}<br></span>
                 </div>
                 <div class="user-box" id="container-dest">
                     <input v-model="receiverEmail" type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
                 </div>
                 <div class="btn">
                     <button type="submit" id="confirm" class="btn_l">Confirmer</button>
-                    <button type="reset" id="del" class="btn_l">Annuler</button>
+                    <button type="reset" id="del" class="btn_l" @click="deleteInputFile()">Annuler</button>
                 </div>
                 <div v-if="progress" class="progress-wrapper">
                     <div id="progress" class="progress" :style="progress_style"></div>
                 </div>
             </form>
 
-            <h2 id="title">Trouver l'email du Destinataire</h2>
+            <h2 id="title">Trouver l'email du destinataire</h2>
             <form class="formy" method="post" @submit.prevent="CheckContact()" @reset.prevent="deleteContacts()" >
                 <div class="user-box" id="container-dest">
                     <input v-model="email_search" type="text" class="dest" required="required" placeholder="Destinataire">
@@ -131,9 +131,13 @@ export default {
         }, 
 
         deleteInputFile: function(){
-            for(var i = 0; i < document.getElementById("fileInput").files.length; i++){
-                console.log("delete file here")
-            }
+            console.log(document.getElementById("fileInput").files.length)
+            /*for(var i = 0; i < document.getElementById("fileInput").files.length; i++){
+                document.getElementById("fileInput").files[i].value = 
+            }*/
+            document.getElementById("fileInput").value = ""
+            this.$forceUpdate()
+            console.log(document.getElementById("fileInput").files.length)
         },
 
         handleFile: async function () {

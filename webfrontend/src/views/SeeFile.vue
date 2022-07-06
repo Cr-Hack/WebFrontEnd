@@ -28,8 +28,8 @@
                         <td><button class="btn" @click="deleteFile(info.fileID)"><i class="fa-solid fa-minus" id="btn-logo"></i></button></td>
                     </tr>
                 </tbody>
-                <tbody v-if="!emptyTable">
-                    <td colspan="7"><span id="emptyTable"><h2><i class="fa-solid fa-magnifying-glass"></i> I think you have no file...</h2></span></td>
+                <tbody v-if="emptyTable">
+                    <td colspan="8"><span id="emptyTable"><h2><i class="fa-solid fa-magnifying-glass"></i> I think you have no file...</h2></span></td>
                 </tbody>
             </table>
         </div>
@@ -48,7 +48,8 @@ export default {
     components : {NavBar}, 
     data(){
         return{
-            infos : this.created()
+            infos : this.created(),
+            emptyTable: true
         }
     },
     methods: {
@@ -56,18 +57,15 @@ export default {
             axios.post('http://localhost:5000/file/view', {}, {headers:{token: this.$store.getters.token}})
                 .then((response) => {
                     this.infos = response.data.files
+                    if (this.infos.length != 0){
+                        this.emptyTable = false;
+                    }
                 })
                 .catch((err) => {
                     console.log(err)
                 })
         }, 
 
-        emptyTable: function () {
-            if(this.infos.length === 0){
-                return true
-            }
-            return false
-        },
 
         deleteFile: async function(fileID){
             const fileToDelete = await axios.post("http://localhost:5000/file/delete", {fileID: fileID},{ headers: { token: this.$store.getters.token } })
