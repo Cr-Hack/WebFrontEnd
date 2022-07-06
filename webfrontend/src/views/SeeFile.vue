@@ -40,6 +40,10 @@
 import axios from 'axios'
 import NavBar from './sidebar/NavBar.vue'
 
+// stream
+//const streamSaver = require('streamsaver')
+
+
 export default {
     components : {NavBar}, 
     data(){
@@ -163,6 +167,8 @@ export default {
             
             this.downloadBlob(filePlainAB, fileType, fileName) // téléchargement du fichier
         },
+
+
 
         // download ArrayBuffer to file 
         downloadBlob: function (filePlainAB, fileType, fileName) {

@@ -19,12 +19,15 @@
 
 <script>
 export default {
-    data(){
-        return{
-            user_name : ''
-        }
-    },
+    setup(){
 
+    }, 
+    data(){
+        return {
+            fname: this.$store.getters.user.firstname,
+            lname: this.$store.getters.user.lastname,
+        }
+    }, 
     methods:{
         getUser: async function(){
             this.user_name = this.$store.getters.user.email
@@ -33,6 +36,13 @@ export default {
     },
     beforeMount(){
         this.getUser()
+
+    }, 
+    mounted () {
+        console.log(this.$store.getters.user.email)
+        console.log (this.$store.getters.user.firstname)
+        console.log (this.$store.getters.user.lastname)
+
     }
 }
 </script>

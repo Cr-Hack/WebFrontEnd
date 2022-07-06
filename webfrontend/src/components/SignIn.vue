@@ -58,7 +58,8 @@ export default {
                     //modify the token 
                     this.$store.dispatch("setToken", result.data.token);
                     this.$store.dispatch("addUser", {   
-                        
+                        firstname: result.data.firstname,
+                        lastname: result.data.lastname,
                         pwd: this.pwd,
                         email: this.email,
                         publicKey: result.data.publicKey,
