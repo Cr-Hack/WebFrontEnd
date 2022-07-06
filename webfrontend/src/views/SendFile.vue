@@ -336,7 +336,7 @@ export default {
     margin: 100px 100px;
     box-shadow: 0 15px 25px #C1C1C1;
     background-color: rgb(248, 248, 248);
-    margin-bottom: 20px;
+    margin-bottom: 18% ;
 }
 
 .user-box{

@@ -278,7 +278,6 @@ export default {
         display: block;
         width: 200px;
         height: 50px;
-        padding: 0;
         text-align: center;
         border: none;
         background: #2e86ab;
@@ -298,8 +297,10 @@ export default {
         background: #266e8d;
     }
 
+
     .img2{
         margin: 2%;
+        position : left ; 
     }
 
 </style>

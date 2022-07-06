@@ -8,7 +8,7 @@
                 Entrer le code d'authentification envoyé par mail 
             </h2>
 
-            <form action="container3" method="post" @submit.prevent="verify_auth()">
+            <form action="" class="container3" method="post" @submit.prevent="verify_auth()">
                 <input class="input-group" type="number" v-model="code_auth" min="0" max="1000000" required>
                 <button class="input-group-btn btn" type="submit">Envoyer</button>
             </form>
@@ -18,7 +18,7 @@
 </template>
 
 <script>
-import emailjs from 'emailjs-com';
+//import emailjs from 'emailjs-com';
 
 export default {
 
@@ -41,7 +41,7 @@ export default {
             this.code_send = this.generateCode()
             //const hash_code_send = await this.hashencryption(this.code_send) ; 
             
-            var templateParams = {
+            /*var templateParams = {
                 email: this.$store.getters.user.email, 
                 code : this.code_send
             }
@@ -51,12 +51,14 @@ export default {
                 console.log('SUCCESS!', response.status, response.text);
                 }, function(error) {
                 console.log('FAILED...', error);
-            })
+            })*/
+
+            console.log (this.code_send)
 
             // send to the signin page when the code was given for more than 1000 millisecondes
             setTimeout(() => {
                 this.$router.push({ name: 'SignIn' })
-            }, 1000) 
+            }, 300000) 
 
         
     },
@@ -106,7 +108,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
     
     .container3{
@@ -118,7 +120,7 @@ export default {
     }
 
     .container3 .input-group {
-        width: 75%;
+        width: 50%;
         height: 100%;
         border: 2px solid #2e86ab;
         padding: 20px 20px;
@@ -128,7 +130,6 @@ export default {
         margin-right: auto;
         margin-left: auto;
         margin-bottom: 2%;
-        
     }
 
     .container3 .input-group :focus,
@@ -138,11 +139,9 @@ export default {
 
     .container3 .input-group-btn  {
 
-
         display: block;
         width: 50%;
         height: 50px;
-        padding: 2% 2%;
         text-align: center;
         border: none;
         background: #2e86ab;
@@ -152,7 +151,7 @@ export default {
         color: #FFF;
         cursor: pointer;
         transition: .3s;
-        margin-bottom: 3%;
+        margin-bottom: 18%;
         margin-right: auto;
         margin-left: auto;
     }
@@ -164,6 +163,10 @@ export default {
 
     .img2{
         margin: 2%;
+    }
+
+    h2{
+        margin-top : 4% ; 
     }
 
 </style>

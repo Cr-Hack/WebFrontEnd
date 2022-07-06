@@ -391,6 +391,7 @@ export default {
     margin: 10px 70px 70px;
     box-shadow: 0px 35px 50px rgba(0,0,0,0.2);
     /* max-height: 800px; */
+    margin-bottom : 40% ; 
 }
 
 th{
@@ -412,7 +413,6 @@ button{
     transition: background 70ms cubic-bezier(0,0,.38,.9),box-shadow 70ms cubic-bezier(0,0,.38,.9),border-color 70ms cubic-bezier(0,0,.38,.9),outline 70ms cubic-bezier(0,0,.38,.9);
 
 }
-
 
 button:hover{
     background: var(--red);

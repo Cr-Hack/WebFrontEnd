@@ -55,7 +55,8 @@ export default {
                     //alert ("Connexion réussie !")
                     //modify the token 
                     this.$store.dispatch("setToken", result.data.token);
-                    this.$store.dispatch("addUser", {
+                    this.$store.dispatch("addUser", {   
+                        
                         pwd: this.pwd,
                         email: this.email,
                         publicKey: result.data.publicKey,
@@ -98,7 +99,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 
     .container3{
         padding : 2% ;
@@ -140,7 +141,7 @@ export default {
         color: #FFF;
         cursor: pointer;
         transition: .3s;
-        margin-bottom: 3%;
+        margin-bottom: 14%;
         margin-right: auto;
         margin-left: auto;
     }
@@ -153,6 +154,5 @@ export default {
     .img2{
         margin: 2%;
     }
-
 
 </style>
