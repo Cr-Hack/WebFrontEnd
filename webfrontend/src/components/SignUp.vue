@@ -16,10 +16,16 @@
             <input class="input-group" v-model="fname" type="text" placeholder="Prénom" required>
             <input class="input-group" v-model="lname" type="text" placeholder="Nom" required>
             <input class="input-group" v-model="email" type="email" name="" id="email" placeholder="Email" required>
-            <input class="input-group" v-model="pwd" type="password" name="" id="pwd" placeholder="Mot de passe"
+            <input class="input-group" v-model="pwd" type="password" name="" id="pwd" 
+                placeholder="Mot de passe"
+                title="Votre mot de passe doit contenir au moins une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial."
+                minlength="8" 
+                maxlength="100" 
                 required>
             <input class="input-group" v-model="pwd_verif" type="password" name="" id="pwd_verif"
-                placeholder="Confirmation du mot de passe" required>
+                placeholder="Confirmation du mot de passe"
+                title="Veuillez confirmer votre mot de passe."
+                required>
             <button class="input-group-btn" type="submit">C'est parti !</button>
             <button class="input-group-btn" type="reset">Reset</button>
 
@@ -50,12 +56,29 @@ export default {
     methods :{
         // redirection to the signin page when sign up 
 
-        goToHome : function (){
+        goToHome: function (){
             alert("changement de page") 
             this.$router.push({name : 'HomePage'})
         }, 
         
+        checkPassword: function () {
+            var decimal = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
+            if (this.pwd.match(decimal)) {
+                console.log('Mot de passe accepté')
+                return true;
+            }
+            else {
+                return false;
+            }
+        }, 
+
         goToSignIn: async function () {
+            // check pwd
+            if (!this.checkPassword()) {
+                alert("La création de compte a échoué car le mot de passe choisi ne respecte pas les contraintes. Veuillez en choisir un autre.")
+                return
+            }
+
             /***** RSA key generation *****/
             var keyPair = await this.rsaKeyPair();
 
