@@ -18,9 +18,9 @@
             <input class="input-group" v-model="email" type="email" name="" id="email" placeholder="Email" required>
             <input class="input-group" v-model="pwd" type="password" name="" id="pwd" 
                 placeholder="Mot de passe"
-                title="Votre mot de passe doit contenir au moins 8 caractères, dont une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial."
+                title="Votre mot de passe doit contenir entre 8 et 50 caractères, dont une lettre minuscule, une lettre majuscule, un chiffre et un caractère spécial."
                 minlength="8" 
-                maxlength="100" 
+                maxlength="50" 
                 required>
             <input class="input-group" v-model="pwd_verif" type="password" name="" id="pwd_verif"
                 placeholder="Confirmation du mot de passe"
@@ -62,7 +62,7 @@ export default {
         }, 
         
         checkPassword: function () {
-            var decimal = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
+            var decimal = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,50}$/;
             if (this.pwd.match(decimal)) {
                 console.log('Mot de passe accepté')
                 return true;
