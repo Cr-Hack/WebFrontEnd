@@ -18,7 +18,7 @@
 </template>
 
 <script>
-//import emailjs from 'emailjs-com';
+import emailjs from 'emailjs-com';
 
 export default {
 
@@ -41,7 +41,7 @@ export default {
             this.code_send = this.generateCode()
             //const hash_code_send = await this.hashencryption(this.code_send) ; 
             
-            /*var templateParams = {
+            var templateParams = {
                 email: this.$store.getters.user.email, 
                 code : this.code_send
             }
@@ -51,11 +51,11 @@ export default {
                 console.log('SUCCESS!', response.status, response.text);
                 }, function(error) {
                 console.log('FAILED...', error);
-            })*/
+            })
 
-            console.log (this.code_send)
+            //console.log (this.code_send)
 
-            // send to the signin page when the code was given for more than 1000 millisecondes
+            // send to the signin page when the code was given for more than 300000 millisecondes
             setTimeout(() => {
                 this.$router.push({ name: 'SignIn' })
             }, 300000) 
@@ -66,7 +66,7 @@ export default {
 
         goToHome : function (){
             alert("changement de page") 
-            this.$router.push({name : 'Main Page'})
+            this.$router.push({name : 'Home Page'})
         }, 
 
         generateCode : function (){
@@ -74,21 +74,11 @@ export default {
             return code2 
         }, 
 
-        /*hashencryption : async function (message1){
-
-            const msgUint8_1 = new TextEncoder().encode(message1);                           // encode as (utf-8) Uint8Array
-            const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
-            const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
-            const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
-            console.log(hashHex_1);
-            return hashHex_1 ;
-        }, */
-
         verify_auth : function (){
 
             if (this.code_auth == this.code_send ) {
                 alert ("connexion réussie ! ")
-                this.$router.push({ name: 'Main Page' })
+                this.$router.push({ name: 'See File' })
             }
             else {
                 if (this.count <= 0){

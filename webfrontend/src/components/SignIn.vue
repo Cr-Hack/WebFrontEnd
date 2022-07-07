@@ -67,8 +67,7 @@ export default {
                         iv: result.data.iv,
                         salt: result.data.salt
                     });
-                    //this.$router.push({ name: 'two_auth' })
-                    this.$router.push({ name: 'Main Page' })
+                    this.$router.push({ name: 'two_auth' })
                 }catch(error){
                     console.log(error)
                     if(error.response.data.error) alert(error.response.data.error)

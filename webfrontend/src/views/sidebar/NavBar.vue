@@ -6,7 +6,6 @@
     </div>
     
     <div class="nav_link">
-        <router-link to="/MainPage">Guide</router-link>
         <router-link to="/seefile">Afficher</router-link>
         <router-link to="/sendfile">Envoyer un fichier</router-link>
         <router-link to="/"><i class="fa-solid fa-arrow-right-from-bracket"></i></router-link>
