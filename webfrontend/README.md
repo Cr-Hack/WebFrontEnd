@@ -1,17 +1,19 @@
 # webfrontend
 
-## need to install before hand 
+## Node.js installation 
+Download Node.js on your computer (for npm command) from the [official website of Vue.js](https://nodejs.org/en/download/) 
+
+## Installation of Vue.js
 ```
-node.js on the computer (for npm command ) 
-Installation of cli : npm install cli
+npm install -g @vue/cli
 ```
 
-## Project setup : install all modules necessary 
+## Project setup: install all modules necessary 
 ```
 npm install
 ```
 
-### Compiles and hot-reloads for development : run the app
+### Compiles and hot-reloads for development: run the app
 ```
 npm run serve
 ```
