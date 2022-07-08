@@ -11,6 +11,7 @@
             <form action="" class="container3" method="post" @submit.prevent="verify_auth()">
                 <input class="input-group" type="number" v-model="code_auth" min="0" max="1000000" required>
                 <button class="input-group-btn btn" type="submit">Envoyer</button>
+                
             </form>
             
     </div>

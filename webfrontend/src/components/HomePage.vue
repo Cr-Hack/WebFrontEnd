@@ -18,7 +18,7 @@
                 <div class="section" id="s2">
                     <i class="fa-solid fa-arrow-down-up-lock fa-3x" id="chiffrement"></i>
                     <h2>Qu'est-ce que le chiffrement de bout en bout ?</h2>
-                    <p>D’après Kaspersky, le chiffrement de bout en bout «consiste à chiffrer les messages sur un dispositif pour que seul le dispositif auquel il est envoyé puisse le déchiffrer. Le message effectue tout le voyage entre l’expéditeur et le destinataire sous forme chiffrée ». L’adoption de cette méthode par Zoom, Signal et WhatsApp démontre que ce type d’échange devient de plus en plus fréquent, à une époque où la protection de la vie privée est un combat continuel.  
+                    <p>D’après Kaspersky, le chiffrement de bout en bout « consiste à chiffrer les messages sur un dispositif pour que seul le dispositif auquel il est envoyé puisse le déchiffrer. Le message effectue tout le voyage entre l’expéditeur et le destinataire sous forme chiffrée ». L’adoption de cette méthode par Zoom, Signal et WhatsApp démontre que ce type d’échange devient de plus en plus fréquent, à une époque où la protection de la vie privée est un combat continuel.  
 
                     L’avantage du chiffrement de bout en bout réside dans le fait que le message est en claire, donc non chiffré, seulement sur la machine de l’expéditeur et la machine du destinataire. Ainsi si le message est intercepté, il sera illisible. En conséquence, le principal danger réside dans le fait que quelqu’un peut subtiliser les coordonnées de l’un des deux utilisateurs, d’où l’importance de l’authentification.  </p>
                 </div>

@@ -31,7 +31,7 @@
                     </tr>
                 </tbody>
                 <tbody v-if="this.infos.length == 0">
-                    <td colspan="8"><span id="emptyTable"><h2><i class="fa-solid fa-magnifying-glass"></i> I think you have no file...</h2></span></td>
+                    <td colspan="8"><span id="emptyTable"><h2><i class="fa-solid fa-magnifying-glass"></i> Je pense que vous n'avez aucun fichier...</h2></span></td>
                 </tbody>
             </table>
         </div>

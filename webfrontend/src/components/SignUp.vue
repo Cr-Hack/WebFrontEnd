@@ -36,7 +36,7 @@
 
 <script>
 
-//import emailjs from 'emailjs-com';
+import emailjs from 'emailjs-com';
 const axios = require('axios')
 
 export default {
@@ -128,7 +128,7 @@ export default {
                 await axios.post('http://localhost:5000/auth/register', toServer)
                 //console.log(response);
                 alert("Inscription réussie")
-                //this.sendEmailInsc()
+                this.sendEmailInsc()
                 this.$router.push({ name: 'SignIn' })
             } catch (error) {
                 console.log(error);
@@ -297,7 +297,7 @@ export default {
         //     // console.log(await this.increment(initVector, 5))
         // }
 
-        /*sendEmailInsc() {
+        sendEmailInsc() {
 
             let name = this.fname + " "+ this.lname
             var templateParams = {  
@@ -311,7 +311,7 @@ export default {
                 }, function(error) {
                 console.log('FAILED...', error);
             });
-        },*/
+        },
 
     }
 }
