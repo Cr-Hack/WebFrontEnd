@@ -84,8 +84,8 @@ export default {
 
             // export the CryptoKeys above into ArrayBuffers
             let rsaPrivate = await window.crypto.subtle.exportKey("pkcs8", keyPair.privateKey);  // object of type ArrayBuffer
-            console.log("private kye here !!!!!!!!!!!!!!")
-            console.log(this.arrayBufferToBase64(rsaPrivate))
+            //console.log("private kye here !!!!!!!!!!!!!!")
+            //console.log(this.arrayBufferToBase64(rsaPrivate))
             let rsaPublic = await window.crypto.subtle.exportKey("spki", keyPair.publicKey);  // object of type ArrayBuffer
 
             /***** RSA private key encryption *****/
@@ -96,10 +96,10 @@ export default {
             const aesEncKey = await this.aesKey(keyMaterial, user_salt)
 
             ////////////// test zone 
-            console.log("the AES encryption key converted to str")
-            const aeskeyAB = await window.crypto.subtle.exportKey("raw", aesEncKey)
-            const aeskeystr = this.arrayBufferToBase64(aeskeyAB)
-            console.log(aeskeystr)
+            //console.log("the AES encryption key converted to str")
+            //const aeskeyAB = await window.crypto.subtle.exportKey("raw", aesEncKey)
+            //const aeskeystr = this.arrayBufferToBase64(aeskeyAB)
+            //console.log(aeskeystr)
 
             // actual encryption
             const rsaEncryptedPrivateKey = await this.encryptRsaKey(rsaPrivate, init_vector, aesEncKey);  // encryption
@@ -125,8 +125,8 @@ export default {
             }
 
             try {
-                let response = await axios.post('http://localhost:5000/auth/register', toServer)
-                console.log(response);
+                await axios.post('http://localhost:5000/auth/register', toServer)
+                //console.log(response);
                 alert("Inscription réussie")
                 //this.sendEmailInsc()
                 this.$router.push({ name: 'SignIn' })

@@ -91,7 +91,6 @@ export default {
             const hashBuffer_1 = await crypto.subtle.digest('SHA-256', msgUint8_1);           // hash the message
             const hashArray_1 = Array.from(new Uint8Array(hashBuffer_1));                     // convert buffer to byte array
             const hashHex_1 = hashArray_1.map(b => b.toString(16).padStart(2, '0')).join(''); // convert bytes to hex string
-            console.log(hashHex_1);
             return hashHex_1 ;
 
         }, 

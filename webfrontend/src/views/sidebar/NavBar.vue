@@ -2,7 +2,7 @@
 <nav>
     <div class="container-rightSide"> 
         <i id="account" class="fa-solid fa-user"></i>
-        <p>{{user_name}}</p>
+        <p>{{fname + " " + lname}}</p>
     </div>
     
     <div class="nav_link">
@@ -30,7 +30,6 @@ export default {
     methods:{
         getUser: async function(){
             this.user_name = this.$store.getters.user.email
-            console.log(this.user_name)
         }
     },
     beforeMount(){
@@ -38,10 +37,6 @@ export default {
 
     }, 
     mounted () {
-        console.log(this.$store.getters.user.email)
-        console.log (this.$store.getters.user.firstname)
-        console.log (this.$store.getters.user.lastname)
-
     }
 }
 </script>

@@ -20,7 +20,7 @@
                      Fichier(s) : <span id="file" v-for="(file, index) of dropzoneFile" :key="index">{{file.name}}<br></span>
                 </div>
                 <div class="user-box" id="container-dest">
-                    <input v-model="receiverEmail" type="text" id="dest" class="dest" required="required" placeholder="Destinataire">
+                    <input v-model="receiverEmail" type="email" id="dest" class="dest" required="required" placeholder="Destinataire">
                 </div>
                 <table>
                     <thead>
@@ -140,8 +140,16 @@ export default {
             /***** fetch global data *****/
             // fetch the receiver's public RSA key (type string)
             //console.log("demande infos au serveur")
-            const receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
-            const resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
+            let receiverID
+            let resultsPublicKey
+            try {
+                receiverID = await axios.post("http://localhost:5000/users/getid", { email: this.receiverEmail }, { headers: { token: this.$store.getters.token } })
+                resultsPublicKey = await axios.post("http://localhost:5000/users/publickey", { userID: receiverID.data.userId }, { headers: { token: this.$store.getters.token } })
+            }catch (error) {
+                alert("Le destinataire n'existe pas.")
+                this.progress = false
+                return
+            }
             const receiverPublicKeyStr = resultsPublicKey.data.publickey
             const senderPublicKeyStr = this.$store.getters.user.publicKey
             //console.log("demande infos au serveur fin")
@@ -166,7 +174,7 @@ export default {
             const files = this.dropzoneFile
 
             // size of each chunk in Megabyte
-            const chunkSize = 64 * (2 ** 20)  // in octets (= 128 Mo)
+            const chunkSize = 64 * (2 ** 20)  // in octets (= 64 Mo)
 
             var selectedFile
 
